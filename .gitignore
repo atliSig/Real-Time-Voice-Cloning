@@ -14,7 +14,6 @@
 *.bcf
 *.toc
 *.wav
-*.sh
 voice-cloning/encoder/saved_models/*
 voice-cloning/synthesizer/saved_models/*
 voice-cloning/vocoder/saved_models/*
