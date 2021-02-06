@@ -5,10 +5,9 @@ import numpy as np
 import math
 import os
 
-import hparams
-import audio as Audio
+from hparams import HyperParameters as hparams
 from utils import pad_1D, pad_2D, process_meta
-from text import text_to_sequence, sequence_to_text
+from text import text_to_sequence
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

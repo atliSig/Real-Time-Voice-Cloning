@@ -1,13 +1,11 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from collections import OrderedDict
 import numpy as np
 import copy
-import math
 
-import hparams as hp
+from hparams import HyperParameters as hp
 import utils
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

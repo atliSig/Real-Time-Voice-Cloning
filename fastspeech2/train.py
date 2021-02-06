@@ -1,7 +1,8 @@
+from comet_ml import Experiment
+
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 import argparse
@@ -13,7 +14,7 @@ from loss import FastSpeech2Loss
 from dataset import Dataset
 from optimizer import ScheduledOptim
 from evaluate import evaluate
-import hparams as hp
+from hparams import HyperParameters as hp
 import utils
 import audio as Audio
 
@@ -22,7 +23,7 @@ def main(args):
     torch.manual_seed(0)
 
     # Get device
-    device = torch.device('cuda'if torch.cuda.is_available()else 'cpu')
+    device = torch.device('cuda'if torch.cuda.is_available() else 'cpu')
 
     # Get dataset
     dataset = Dataset("train.txt")
@@ -36,8 +37,8 @@ def main(args):
     print('Number of FastSpeech2 Parameters:', num_param)
 
     # Optimizer and loss
-    optimizer = torch.optim.Adam(
-        model.parameters(), betas=hp.betas, eps=hp.eps, weight_decay=hp.weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(),
+                                 lr=1e-4, betas=hp.betas, eps=hp.eps, weight_decay=hp.weight_decay)
     scheduled_optim = ScheduledOptim(
         optimizer, hp.decoder_hidden, hp.n_warm_up_step, args.restore_step)
     Loss = FastSpeech2Loss().to(device)
@@ -58,40 +59,35 @@ def main(args):
 
     # Load vocoder
     if hp.vocoder == 'melgan':
-        melgan = utils.get_melgan()
+        vocoder = utils.get_melgan()
+        vocoder_infer = utils.melgan_infer
     elif hp.vocoder == 'waveglow':
-        waveglow = utils.get_waveglow()
+        vocoder = utils.get_waveglow()
+        vocoder_infer = utils.waveglow_infer
+    else:
+        raise ValueError("Vocoder '%s' is not supported", hp.vocoder)
 
-    # Init logger
-    log_path = hp.log_path
-    if not os.path.exists(log_path):
-        os.makedirs(log_path)
-        os.makedirs(os.path.join(log_path, 'train'))
-        os.makedirs(os.path.join(log_path, 'validation'))
-    train_logger = SummaryWriter(os.path.join(log_path, 'train'))
-    val_logger = SummaryWriter(os.path.join(log_path, 'validation'))
+    comet_experiment = None
+    if int(os.getenv("USE_COMET", default=0)) == 1:
+        comet_experiment = Experiment(
+            api_key="BtyTwUoagGMh3uN4VZt6gMOn8",
+            project_name="mlp-project",
+            workspace="ino-voice",
+        )
+        comet_experiment.set_name(args.experiment_name)
+        comet_experiment.log_parameters(hp)
+        comet_experiment.log_html(args.m)
 
-    # Init synthesis directory
-    synth_path = hp.synth_path
-    if not os.path.exists(synth_path):
-        os.makedirs(synth_path)
-
-    # Define Some Information
-    Time = np.array([])
-    Start = time.perf_counter()
-
+    start_time = time.perf_counter()
     # Training
-    model = model.train()
     for epoch in range(hp.epochs):
         # Get Training Loader
         total_step = hp.epochs * len(loader) * hp.batch_size
-
         for i, batchs in enumerate(loader):
             for j, data_of_batch in enumerate(batchs):
-                start_time = time.perf_counter()
+                model = model.train()
 
-                current_step = i*hp.batch_size + j + args.restore_step + \
-                    epoch*len(loader)*hp.batch_size + 1
+                current_step = i * hp.batch_size + j + args.restore_step + epoch * len(loader) * hp.batch_size + 1
 
                 # Get Data
                 text = torch.from_numpy(
@@ -121,24 +117,13 @@ def main(args):
                 total_loss = mel_loss + mel_postnet_loss + d_loss + f_loss + e_loss
 
                 # Logger
-                t_l = total_loss.item()
-                m_l = mel_loss.item()
-                m_p_l = mel_postnet_loss.item()
-                d_l = d_loss.item()
-                f_l = f_loss.item()
-                e_l = e_loss.item()
-                with open(os.path.join(log_path, "total_loss.txt"), "a") as f_total_loss:
-                    f_total_loss.write(str(t_l)+"\n")
-                with open(os.path.join(log_path, "mel_loss.txt"), "a") as f_mel_loss:
-                    f_mel_loss.write(str(m_l)+"\n")
-                with open(os.path.join(log_path, "mel_postnet_loss.txt"), "a") as f_mel_postnet_loss:
-                    f_mel_postnet_loss.write(str(m_p_l)+"\n")
-                with open(os.path.join(log_path, "duration_loss.txt"), "a") as f_d_loss:
-                    f_d_loss.write(str(d_l)+"\n")
-                with open(os.path.join(log_path, "f0_loss.txt"), "a") as f_f_loss:
-                    f_f_loss.write(str(f_l)+"\n")
-                with open(os.path.join(log_path, "energy_loss.txt"), "a") as f_e_loss:
-                    f_e_loss.write(str(e_l)+"\n")
+                if comet_experiment is not None:
+                    comet_experiment.log_metric("total_loss", total_loss.item(), current_step)
+                    comet_experiment.log_metric("mel_loss", mel_loss.item(), current_step)
+                    comet_experiment.log_metric("mel_postnet_loss", mel_postnet_loss.item(), current_step)
+                    comet_experiment.log_metric("duration_loss", d_loss.item(), current_step)
+                    comet_experiment.log_metric("f0_loss", f_loss.item(), current_step)
+                    comet_experiment.log_metric("energy_loss", e_loss.item(), current_step)
 
                 # Backward
                 total_loss = total_loss / hp.acc_steps
@@ -147,8 +132,7 @@ def main(args):
                     continue
 
                 # Clipping gradients to avoid gradient explosion
-                nn.utils.clip_grad_norm_(
-                    model.parameters(), hp.grad_clip_thresh)
+                nn.utils.clip_grad_norm_(model.parameters(), hp.grad_clip_thresh)
 
                 # Update weights
                 scheduled_optim.step_and_update_lr()
@@ -156,118 +140,69 @@ def main(args):
 
                 # Print
                 if current_step % hp.log_step == 0:
-                    Now = time.perf_counter()
+                    now = time.perf_counter()
 
-                    str1 = "Epoch [{}/{}], Step [{}/{}]:".format(
-                        epoch+1, hp.epochs, current_step, total_step)
-                    str2 = "Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Duration Loss: {:.4f}, F0 Loss: {:.4f}, Energy Loss: {:.4f};".format(
-                        t_l, m_l, m_p_l, d_l, f_l, e_l)
-                    str3 = "Time Used: {:.3f}s, Estimated Time Remaining: {:.3f}s.".format(
-                        (Now-Start), (total_step-current_step)*np.mean(Time))
+                    print("\nEpoch [{}/{}], Step [{}/{}]:".format(epoch+1, hp.epochs, current_step, total_step))
+                    print("Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Duration Loss: {:.4f}, "
+                           "F0 Loss: {:.4f}, Energy Loss: {:.4f};".format(total_loss.item(), mel_loss.item(),
+                          mel_postnet_loss.item(), d_loss.item(), f_loss.item(), e_loss.item()))
+                    print("Time Used: {:.3f}s".format(now - start_time))
+                    start_time = now
 
-                    print("\n" + str1)
-                    print(str2)
-                    print(str3)
-
-                    with open(os.path.join(log_path, "log.txt"), "a") as f_log:
-                        f_log.write(str1 + "\n")
-                        f_log.write(str2 + "\n")
-                        f_log.write(str3 + "\n")
-                        f_log.write("\n")
-
-                    train_logger.add_scalar(
-                        'Loss/total_loss', t_l, current_step)
-                    train_logger.add_scalar('Loss/mel_loss', m_l, current_step)
-                    train_logger.add_scalar(
-                        'Loss/mel_postnet_loss', m_p_l, current_step)
-                    train_logger.add_scalar(
-                        'Loss/duration_loss', d_l, current_step)
-                    train_logger.add_scalar('Loss/F0_loss', f_l, current_step)
-                    train_logger.add_scalar(
-                        'Loss/energy_loss', e_l, current_step)
-
-                if current_step % hp.save_step == 0:
-                    torch.save({'model': model.state_dict(), 'optimizer': optimizer.state_dict(
-                    )}, os.path.join(checkpoint_path, 'checkpoint_{}.pth.tar'.format(current_step)))
-                    print("save model at step {} ...".format(current_step))
+                if current_step % hp.chechpoint == 0:
+                    file_path = os.path.join(checkpoint_path, 'checkpoint_{}.pth.tar'.format(current_step))
+                    torch.save({'model': model.state_dict(), 'optimizer': optimizer.state_dict()}, file_path)
+                    print("saving model at to {}".format(file_path))
 
                 if current_step % hp.synth_step == 0:
                     length = mel_len[0].item()
-                    mel_target_torch = mel_target[0, :length].detach(
-                    ).unsqueeze(0).transpose(1, 2)
-                    mel_target = mel_target[0, :length].detach(
-                    ).cpu().transpose(0, 1)
-                    mel_torch = mel_output[0, :length].detach(
-                    ).unsqueeze(0).transpose(1, 2)
+                    mel_target_torch = mel_target[0, :length].detach().unsqueeze(0).transpose(1, 2)
+                    mel_target = mel_target[0, :length].detach().cpu().transpose(0, 1)
+                    mel_torch = mel_output[0, :length].detach().unsqueeze(0).transpose(1, 2)
                     mel = mel_output[0, :length].detach().cpu().transpose(0, 1)
-                    mel_postnet_torch = mel_postnet_output[0, :length].detach(
-                    ).unsqueeze(0).transpose(1, 2)
-                    mel_postnet = mel_postnet_output[0, :length].detach(
-                    ).cpu().transpose(0, 1)
-                    Audio.tools.inv_mel_spec(mel, os.path.join(
-                        synth_path, "step_{}_griffin_lim.wav".format(current_step)))
-                    Audio.tools.inv_mel_spec(mel_postnet, os.path.join(
-                        synth_path, "step_{}_postnet_griffin_lim.wav".format(current_step)))
+                    mel_postnet_torch = mel_postnet_output[0, :length].detach().unsqueeze(0).transpose(1, 2)
+                    mel_postnet = mel_postnet_output[0, :length].detach().cpu().transpose(0, 1)
 
-                    if hp.vocoder == 'melgan':
-                        utils.melgan_infer(mel_torch, melgan, os.path.join(
-                            hp.synth_path, 'step_{}_{}.wav'.format(current_step, hp.vocoder)))
-                        utils.melgan_infer(mel_postnet_torch, melgan, os.path.join(
-                            hp.synth_path, 'step_{}_postnet_{}.wav'.format(current_step, hp.vocoder)))
-                        utils.melgan_infer(mel_target_torch, melgan, os.path.join(
-                            hp.synth_path, 'step_{}_ground-truth_{}.wav'.format(current_step, hp.vocoder)))
-                    elif hp.vocoder == 'waveglow':
-                        utils.waveglow_infer(mel_torch, waveglow, os.path.join(
-                            hp.synth_path, 'step_{}_{}.wav'.format(current_step, hp.vocoder)))
-                        utils.waveglow_infer(mel_postnet_torch, waveglow, os.path.join(
-                            hp.synth_path, 'step_{}_postnet_{}.wav'.format(current_step, hp.vocoder)))
-                        utils.waveglow_infer(mel_target_torch, waveglow, os.path.join(
-                            hp.synth_path, 'step_{}_ground-truth_{}.wav'.format(current_step, hp.vocoder)))
+                    if comet_experiment is not None:
+                        comet_experiment.log_audio(Audio.tools.inv_mel_spec(mel),
+                                                   hp.sampling_rate, "step_{}_griffin_lim.wav".format(current_step))
+                        comet_experiment.log_audio(Audio.tools.inv_mel_spec(mel_postnet),
+                                                   hp.sampling_rate, "step_{}_postnet_griffin_lim.wav".format(current_step))
+                        comet_experiment.log_audio(vocoder_infer(mel_torch, vocoder), hp.sampling_rate,
+                                                   'step_{}_{}.wav'.format(current_step, hp.vocoder))
+                        comet_experiment.log_audio(vocoder_infer(mel_postnet_torch, vocoder), hp.sampling_rate,
+                                                   'step_{}_postnet_{}.wav'.format(current_step, hp.vocoder))
+                        comet_experiment.log_audio(vocoder_infer(mel_target_torch, vocoder), hp.sampling_rate,
+                                                   'step_{}_ground-truth_{}.wav'.format(current_step, hp.vocoder))
 
-                    f0 = f0[0, :length].detach().cpu().numpy()
-                    energy = energy[0, :length].detach().cpu().numpy()
-                    f0_output = f0_output[0, :length].detach().cpu().numpy()
-                    energy_output = energy_output[0,
-                                                  :length].detach().cpu().numpy()
+                        f0 = f0[0, :length].detach().cpu().numpy()
+                        energy = energy[0, :length].detach().cpu().numpy()
+                        f0_output = f0_output[0, :length].detach().cpu().numpy()
+                        energy_output = energy_output[0, :length].detach().cpu().numpy()
 
-                    utils.plot_data([(mel_postnet.numpy(), f0_output, energy_output), (mel_target.numpy(), f0, energy)],
-                                    ['Synthetized Spectrogram', 'Ground-Truth Spectrogram'], filename=os.path.join(synth_path, 'step_{}.png'.format(current_step)))
+                        utils.plot_data(
+                            [(mel_postnet.numpy(), f0_output, energy_output), (mel_target.numpy(), f0, energy)],
+                            comet_experiment, ['Synthetized Spectrogram', 'Ground-Truth Spectrogram'])
 
                 if current_step % hp.eval_step == 0:
                     model.eval()
                     with torch.no_grad():
-                        d_l, f_l, e_l, m_l, m_p_l = evaluate(
-                            model, current_step)
-                        t_l = d_l + f_l + e_l + m_l + m_p_l
+                        with comet_experiment.validate():
+                            d_l, f_l, e_l, m_l, m_p_l = evaluate(model, current_step, comet_experiment)
+                            t_l = d_l + f_l + e_l + m_l + m_p_l
 
-                        val_logger.add_scalar(
-                            'Loss/total_loss', t_l, current_step)
-                        val_logger.add_scalar(
-                            'Loss/mel_loss', m_l, current_step)
-                        val_logger.add_scalar(
-                            'Loss/mel_postnet_loss', m_p_l, current_step)
-                        val_logger.add_scalar(
-                            'Loss/duration_loss', d_l, current_step)
-                        val_logger.add_scalar(
-                            'Loss/F0_loss', f_l, current_step)
-                        val_logger.add_scalar(
-                            'Loss/energy_loss', e_l, current_step)
-
-                    model.train()
-
-                end_time = time.perf_counter()
-                Time = np.append(Time, end_time - start_time)
-                if len(Time) == hp.clear_Time:
-                    temp_value = np.mean(Time)
-                    Time = np.delete(
-                        Time, [i for i in range(len(Time))], axis=None)
-                    Time = np.append(Time, temp_value)
+                            comet_experiment.log_metric("total_loss", t_l, current_step)
+                            comet_experiment.log_metric("mel_loss", m_l, current_step)
+                            comet_experiment.log_metric("mel_postnet_loss", m_p_l, current_step)
+                            comet_experiment.log_metric("duration_loss", d_l, current_step)
+                            comet_experiment.log_metric("F0_loss", f_l, current_step)
+                            comet_experiment.log_metric("energy_loss", e_l, current_step)
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--restore_step', type=int, default=0)
+    parser.add_argument('--experiment-name', type=str, required=True)
+    parser.add_argument('-m', type=str, required=True)
     args = parser.parse_args()
-
     main(args)

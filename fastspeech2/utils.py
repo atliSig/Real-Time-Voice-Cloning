@@ -1,4 +1,4 @@
-import hparams as hp
+from hparams import HyperParameters as hp
 import text
 import os
 from scipy.io import wavfile
@@ -64,7 +64,7 @@ def get_param_num(model):
     return num_param
 
 
-def plot_data(data, titles=None, filename=None):
+def plot_data(data, comet_experiment, titles=None):
     fig, axes = plt.subplots(len(data), 1, squeeze=False)
     if titles is None:
         titles = [None for i in range(len(data))]
@@ -101,7 +101,8 @@ def plot_data(data, titles=None, filename=None):
         ax2.tick_params(labelsize='x-small', colors='darkviolet', bottom=False,
                         labelbottom=False, left=False, labelleft=False, right=True, labelright=True)
 
-    plt.savefig(filename, dpi=200)
+    comet_experiment.log_figure(fig)
+    # plt.savefig(filename, dpi=200)
     plt.close()
 
 
@@ -130,19 +131,21 @@ def get_waveglow():
     return waveglow
 
 
-def waveglow_infer(mel, waveglow, path):
+def waveglow_infer(mel, waveglow):
     with torch.no_grad():
         wav = waveglow.infer(mel, sigma=1.0) * hp.max_wav_value
         wav = wav.squeeze().cpu().numpy()
     wav = wav.astype('int16')
-    wavfile.write(path, hp.sampling_rate, wav)
+    return wav
+    # wavfile.write(path, hp.sampling_rate, wav)
 
 
-def melgan_infer(mel, melgan, path):
+def melgan_infer(mel, melgan):
     with torch.no_grad():
         wav = melgan.inference(mel).cpu().numpy()
     wav = wav.astype('int16')
-    wavfile.write(path, hp.sampling_rate, wav)
+    return wav
+    # wavfile.write(path, hp.sampling_rate, wav)
 
 
 def get_melgan():

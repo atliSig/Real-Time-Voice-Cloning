@@ -43,7 +43,8 @@ def get_FastSpeech2(num):
     return model
 
 
-def synthesize(model, waveglow, melgan, text, sentence, prefix='', duration_control=1.0, pitch_control=1.0, energy_control=1.0):
+def synthesize(model, waveglow, melgan, text, sentence, prefix='',
+               duration_control=1.0, pitch_control=1.0, energy_control=1.0):
     sentence = sentence[:200]  # long filename will result in OS Error
 
     src_len = torch.from_numpy(np.array([text.shape[1]])).to(device)
@@ -58,8 +59,7 @@ def synthesize(model, waveglow, melgan, text, sentence, prefix='', duration_cont
     f0_output = f0_output[0].detach().cpu().numpy()
     energy_output = energy_output[0].detach().cpu().numpy()
 
-    if not os.path.exists(hp.test_path):
-        os.makedirs(hp.test_path)
+    os.makedirs(hp.test_path, exist_ok=True)
 
     Audio.tools.inv_mel_spec(mel_postnet, os.path.join(
         hp.test_path, '{}_griffin_lim_{}.wav'.format(prefix, sentence)))

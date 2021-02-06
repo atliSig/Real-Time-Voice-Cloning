@@ -12,7 +12,7 @@ from fastspeech2 import FastSpeech2
 from loss import FastSpeech2Loss
 from dataset import Dataset
 from text import text_to_sequence, sequence_to_text
-import hparams as hp
+from hparams import HyperParameters as hp
 import utils
 import audio as Audio
 
@@ -29,7 +29,7 @@ def get_FastSpeech2(num):
     return model
 
 
-def evaluate(model, step, vocoder=None):
+def evaluate(model, step, comet_experiment=None, vocoder=None):
     torch.manual_seed(0)
 
     # Get dataset
@@ -58,12 +58,9 @@ def evaluate(model, step, vocoder=None):
             D = torch.from_numpy(data_of_batch["D"]).int().to(device)
             log_D = torch.from_numpy(data_of_batch["log_D"]).int().to(device)
             f0 = torch.from_numpy(data_of_batch["f0"]).float().to(device)
-            energy = torch.from_numpy(
-                data_of_batch["energy"]).float().to(device)
-            src_len = torch.from_numpy(
-                data_of_batch["src_len"]).long().to(device)
-            mel_len = torch.from_numpy(
-                data_of_batch["mel_len"]).long().to(device)
+            energy = torch.from_numpy(data_of_batch["energy"]).float().to(device)
+            src_len = torch.from_numpy(data_of_batch["src_len"]).long().to(device)
+            mel_len = torch.from_numpy(data_of_batch["mel_len"]).long().to(device)
             max_src_len = np.max(data_of_batch["src_len"]).astype(np.int32)
             max_mel_len = np.max(data_of_batch["mel_len"]).astype(np.int32)
 
@@ -83,45 +80,38 @@ def evaluate(model, step, vocoder=None):
                 mel_p_l.append(mel_postnet_loss.item())
 
                 if vocoder is not None:
+                    if hp.vocoder == 'melgan':
+                        vocoder_infer =  utils.melgan_infer
+                    elif hp.vocoder == 'melgan':
+                        vocoder_infer = utils.waveglow_infer
+
                     # Run vocoding and plotting spectrogram only when the vocoder is defined
                     for k in range(len(mel_target)):
                         basename = id_[k]
                         gt_length = mel_len[k]
                         out_length = out_mel_len[k]
 
-                        mel_target_torch = mel_target[k:k+1,
-                                                      :gt_length].transpose(1, 2).detach()
-                        mel_target_ = mel_target[k, :gt_length].cpu(
-                        ).transpose(0, 1).detach()
+                        mel_target_torch = mel_target[k:k+1, :gt_length].transpose(1, 2).detach()
+                        mel_target_ = mel_target[k, :gt_length].cpu().transpose(0, 1).detach()
 
-                        mel_postnet_torch = mel_postnet_output[k:k +
-                                                               1, :out_length].transpose(1, 2).detach()
-                        mel_postnet = mel_postnet_output[k, :out_length].cpu(
-                        ).transpose(0, 1).detach()
+                        mel_postnet_torch = mel_postnet_output[k:k+1, :out_length].transpose(1, 2).detach()
+                        mel_postnet = mel_postnet_output[k, :out_length].cpu().transpose(0, 1).detach()
 
-                        if hp.vocoder == 'melgan':
-                            utils.melgan_infer(mel_target_torch, vocoder, os.path.join(
-                                hp.eval_path, 'ground-truth_{}_{}.wav'.format(basename, hp.vocoder)))
-                            utils.melgan_infer(mel_postnet_torch, vocoder, os.path.join(
-                                hp.eval_path, 'eval_{}_{}.wav'.format(basename, hp.vocoder)))
-                        elif hp.vocoder == 'waveglow':
-                            utils.waveglow_infer(mel_target_torch, vocoder, os.path.join(
-                                hp.eval_path, 'ground-truth_{}_{}.wav'.format(basename, hp.vocoder)))
-                            utils.waveglow_infer(mel_postnet_torch, vocoder, os.path.join(
-                                hp.eval_path, 'eval_{}_{}.wav'.format(basename, hp.vocoder)))
-
-                        np.save(os.path.join(hp.eval_path, 'eval_{}_mel.npy'.format(
-                            basename)), mel_postnet.numpy())
+                        comet_experiment.log_audio(vocoder_infer(mel_target_torch, vocoder), hp.sampling_rate,
+                                                   'eval_ground-truth_{}_{}.wav'.format(basename, hp.vocoder))
+                        comet_experiment.log_audio(vocoder_infer(mel_postnet_torch, vocoder), hp.sampling_rate,
+                                                   'eval_{}_{}.wav'.format(basename, hp.vocoder))
+                        # np.save(os.path.join(hp.eval_path, 'eval_{}_mel.npy'.format(
+                        #     basename)), mel_postnet.numpy())
 
                         f0_ = f0[k, :gt_length].detach().cpu().numpy()
                         energy_ = energy[k, :gt_length].detach().cpu().numpy()
-                        f0_output_ = f0_output[k,
-                                               :out_length].detach().cpu().numpy()
-                        energy_output_ = energy_output[k, :out_length].detach(
-                        ).cpu().numpy()
+                        f0_output_ = f0_output[k, :out_length].detach().cpu().numpy()
+                        energy_output_ = energy_output[k, :out_length].detach().cpu().numpy()
 
-                        utils.plot_data([(mel_postnet.numpy(), f0_output_, energy_output_), (mel_target_.numpy(), f0_, energy_)],
-                                        ['Synthesized Spectrogram', 'Ground-Truth Spectrogram'], filename=os.path.join(hp.eval_path, 'eval_{}.png'.format(basename)))
+                        utils.plot_data(
+                            [(mel_postnet.numpy(), f0_output_, energy_output_), (mel_target_.numpy(), f0_, energy_)],
+                            comet_experiment, ['Eval Synthetized Spectrogram', 'Eval Ground-Truth Spectrogram'])
                         idx += 1
 
             current_step += 1
@@ -132,28 +122,12 @@ def evaluate(model, step, vocoder=None):
     mel_l = sum(mel_l) / len(mel_l)
     mel_p_l = sum(mel_p_l) / len(mel_p_l)
 
-    str1 = "FastSpeech2 Step {},".format(step)
-    str2 = "Duration Loss: {}".format(d_l)
-    str3 = "F0 Loss: {}".format(f_l)
-    str4 = "Energy Loss: {}".format(e_l)
-    str5 = "Mel Loss: {}".format(mel_l)
-    str6 = "Mel Postnet Loss: {}".format(mel_p_l)
-
-    print("\n" + str1)
-    print(str2)
-    print(str3)
-    print(str4)
-    print(str5)
-    print(str6)
-
-    with open(os.path.join(hp.log_path, "eval.txt"), "a") as f_log:
-        f_log.write(str1 + "\n")
-        f_log.write(str2 + "\n")
-        f_log.write(str3 + "\n")
-        f_log.write(str4 + "\n")
-        f_log.write(str5 + "\n")
-        f_log.write(str6 + "\n")
-        f_log.write("\n")
+    print("\nFastSpeech2 Step {},".format(step))
+    print("Duration Loss: {}".format(d_l))
+    print("F0 Loss: {}".format(f_l))
+    print("Energy Loss: {}".format(e_l))
+    print("Mel Loss: {}".format(mel_l))
+    print("Mel Postnet Loss: {}".format(mel_p_l))
 
     return d_l, f_l, e_l, mel_l, mel_p_l
 
