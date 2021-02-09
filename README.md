@@ -33,7 +33,7 @@ unzip LJSpeech.zip -q
 
 -Running Interactively
 sinfo
-srun -p Teach-Interactive --gres=gpu:2 --pty python bash
+srun -p Teach-Interactive --gres=gpu:2 --pty bash
 
 ```
 
