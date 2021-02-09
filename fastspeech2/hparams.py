@@ -8,7 +8,7 @@ class HyperParameters:
     experiment_name = "experiment_name"
     # Dataset
     dataset: str = "LJSpeech"
-    data_path: str =  os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"), 'LJSpeech-1.1')
+    data_path: str =  os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models")
     # data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"
     # models_path: str = "/home/rokas/year4/mlp/cw3/data/models"
