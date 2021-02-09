@@ -187,16 +187,17 @@ def main(args):
                 if current_step % hp.eval_step == 0:
                     model.eval()
                     with torch.no_grad():
-                        with comet_experiment.validate():
-                            d_l, f_l, e_l, m_l, m_p_l = evaluate(model, current_step, comet_experiment)
-                            t_l = d_l + f_l + e_l + m_l + m_p_l
+                        if comet_experiment is not None:
+                            with comet_experiment.validate():
+                                d_l, f_l, e_l, m_l, m_p_l = evaluate(model, current_step, comet_experiment)
+                                t_l = d_l + f_l + e_l + m_l + m_p_l
 
-                            comet_experiment.log_metric("total_loss", t_l, current_step)
-                            comet_experiment.log_metric("mel_loss", m_l, current_step)
-                            comet_experiment.log_metric("mel_postnet_loss", m_p_l, current_step)
-                            comet_experiment.log_metric("duration_loss", d_l, current_step)
-                            comet_experiment.log_metric("F0_loss", f_l, current_step)
-                            comet_experiment.log_metric("energy_loss", e_l, current_step)
+                                comet_experiment.log_metric("total_loss", t_l, current_step)
+                                comet_experiment.log_metric("mel_loss", m_l, current_step)
+                                comet_experiment.log_metric("mel_postnet_loss", m_p_l, current_step)
+                                comet_experiment.log_metric("duration_loss", d_l, current_step)
+                                comet_experiment.log_metric("F0_loss", f_l, current_step)
+                                comet_experiment.log_metric("energy_loss", e_l, current_step)
 
 
 if __name__ == "__main__":
