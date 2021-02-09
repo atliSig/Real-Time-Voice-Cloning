@@ -32,3 +32,10 @@ wget --header="Host: uoe-my.sharepoint.com" --header="User-Agent: Mozilla/5.0 (W
 unzip LJSpeech.zip -q
 
 ```
+
+# Example 
+
+First. make sure the hyperparameters in hparams.py are correct. Then run 
+`python train.py --experiment-name "Experiment name" -m ""THis is an example experiment `
+
+Experiment name is used in Comet ML and -m argument can be used to store a note about the experiment.
