@@ -44,6 +44,7 @@ export MODEL_DIR=${DATA_DIR}/models/
 # export MODEL_DIR=/home/${STUDENT_ID}/models/
 
 export USE_COMET=1
+export COMET_API_KEY=ZVxnfYIYLUY5bQHYtnfZOnHjE
 
 # Download Data Set
 
@@ -64,3 +65,10 @@ python train.py --experiment-name 'train_test_exp'
 
 mkdir -p /home/${STUDENT_ID}/models/
 rsync -a /disk/scratch/s1841215/data/models/comet /home/${STUDENT_ID}/models/
+
+# upload most recent model
+exit
+cd /home/${STUDENT_ID}/models/
+source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
+fn=$(ls -t | head -n1)
+comet upload "$fn"
