@@ -69,7 +69,7 @@ class HyperParameters:
     weight_decay: float = 0.
 
     # Vocoder
-    vocoder: str = 'waveglow'  # 'waveglow' or 'melgan'
+    vocoder: str = 'melgan'  # 'waveglow' or 'melgan'
 
     # Log-scaled duration
     log_offset: float = 1.
