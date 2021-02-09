@@ -107,6 +107,7 @@ def plot_data(data, comet_experiment, titles=None):
 
 
 def get_mask_from_lengths(lengths, max_len=None):
+    lengths = lengths.float()
     batch_size = lengths.shape[0]
     if max_len is None:
         max_len = torch.max(lengths).item()
