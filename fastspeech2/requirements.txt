@@ -1,5 +1,4 @@
 numpy == 1.19.0
-torch == 1.6.0
 tgt == 1.4.4
 scipy == 1.5.0
 pyworld == 0.2.10
@@ -10,3 +9,4 @@ unidecode == 1.1.1
 inflect == 4.1.0
 g2p-en == 2.1.0
 tensorboard== 2.2.2
+comet-ml == 3.3.2
