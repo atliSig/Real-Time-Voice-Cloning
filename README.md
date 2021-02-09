@@ -31,6 +31,10 @@ wget --header="Host: uoe-my.sharepoint.com" --header="User-Agent: Mozilla/5.0 (W
 
 unzip LJSpeech.zip -q
 
+-Running Interactively
+sinfo
+srun -p Teach-Interactive --gres=gpu:2 --pty python bash
+
 ```
 
 # Example 
