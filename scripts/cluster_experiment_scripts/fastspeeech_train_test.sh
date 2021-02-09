@@ -35,13 +35,13 @@ export DATASET_DIR=${TMP}/datasets/
 mkdir -p ${TMP}/data/
 export DATA_DIR=${TMP}/data/
 
-# mkdir -p ${DATA_DIR}/models/
-# export MODEL_DIR=${DATA_DIR}/models/
+mkdir -p ${DATA_DIR}/models/
+export MODEL_DIR=${DATA_DIR}/models/
 
 # Comet
 
-mkdir -p /home/${STUDENT_ID}/models/
-export MODEL_DIR=/home/${STUDENT_ID}/models/
+# mkdir -p /home/${STUDENT_ID}/models/
+# export MODEL_DIR=/home/${STUDENT_ID}/models/
 
 export USE_COMET=1
 
@@ -61,3 +61,6 @@ rsync -a /home/s1841215/Real-Time-Voice-Cloning/fastspeech2/data/LJSpeech-1.1 /d
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd /home/s1841215/Real-Time-Voice-Cloning/fastspeech2
 python train.py --experiment-name 'train_test_exp'
+
+mkdir -p /home/${STUDENT_ID}/models/
+rsync -a /disk/scratch/s1841215/data/models/comet /home/${STUDENT_ID}/models/
