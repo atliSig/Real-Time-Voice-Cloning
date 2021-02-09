@@ -58,7 +58,7 @@ class HyperParameters:
 
     # Optimizer
     lr: float = 1e-3
-    batch_size: int = 8
+    batch_size: int = 16
     epochs: int = 1000
     n_warm_up_step: int = 4000
     grad_clip_thresh: float = 1.0

@@ -34,11 +34,13 @@ export DATASET_DIR=${TMP}/datasets/
 mkdir -p ${TMP}/data/
 export DATA_DIR=${TMP}/data/
 
-mkdir -p ${DATA_DIR}/models/
-export MODEL_DIR=${DATA_DIR}/models/
-
+# mkdir -p ${DATA_DIR}/models/
+# export MODEL_DIR=${DATA_DIR}/models/
 
 # Comet
+
+mkdir -p /home/${STUDENT_ID}/models/
+export MODEL_DIR=/home/${STUDENT_ID}/models/
 
 export USE_COMET=1
 
