@@ -37,6 +37,11 @@ export DATA_DIR=${TMP}/data/
 mkdir -p ${DATA_DIR}/models/
 export MODEL_DIR=${DATA_DIR}/models/
 
+
+# Comet
+
+export USE_COMET=1
+
 # Download Data Set
 
 # cd ${DATASET_DIR}
