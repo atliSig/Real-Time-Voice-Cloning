@@ -39,3 +39,12 @@ First. make sure the hyperparameters in hparams.py are correct. Then run
 `python train.py --experiment-name "Experiment name" -m ""THis is an example experiment `
 
 Experiment name is used in Comet ML and -m argument can be used to store a note about the experiment.
+
+If you want to use Comet ML set USE_COMET environment variable to 1.
+
+Since it does't worl on the cluster we run an OfflineExperiment. This can then be uploaded online by
+``
+export COMET_API_KEY=BtyTwUoagGMh3uN4VZt6gMOn8
+# Use the right file 
+comet upload /tmp/comet/5da271fcb60b4652a51dfc0decbe7cd9.zip
+``
