@@ -8,8 +8,10 @@ class HyperParameters:
     experiment_name = "experiment_name"
     # Dataset
     dataset: str = "LJSpeech"
-    data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"
-    models_path: str = "/home/rokas/year4/mlp/cw3/data/models"
+    data_path: str =  os.path.join(os.environ.get['DATASET_DIR'], 'LJSpeech-1.1')
+    models_path: str = os.environ.get['MODEL_DIR']
+    # data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"
+    # models_path: str = "/home/rokas/year4/mlp/cw3/data/models"
     # Text
     text_cleaners: List[str] = field(default_factory=['english_cleaners'])
     ### LJSpeech ###
