@@ -1,4 +1,4 @@
-from comet_ml import Experiment
+from comet_ml import OfflineExperiment
 
 import torch
 import torch.nn as nn
@@ -16,7 +16,7 @@ from optimizer import ScheduledOptim
 from evaluate import evaluate
 from hparams import HyperParameters as hp
 import utils
-import audio as Audio
+from audio import tools as audiotools
 
 
 def main(args):
@@ -69,10 +69,14 @@ def main(args):
 
     comet_experiment = None
     if int(os.getenv("USE_COMET", default=0)) == 1:
-        comet_experiment = Experiment(
-            api_key="BtyTwUoagGMh3uN4VZt6gMOn8",
+        offline_dir = os.path.join(hp.models_path, "comet")
+        os.makedirs(offline_dir, exist_ok=True)
+
+        comet_experiment = OfflineExperiment(
+            # api_key="BtyTwUoagGMh3uN4VZt6gMOn8",
             project_name="mlp-project",
             workspace="ino-voice",
+            offline_directory=offline_dir,
         )
         comet_experiment.set_name(args.experiment_name)
         comet_experiment.log_parameters(hp)
@@ -149,7 +153,7 @@ def main(args):
                     print("Time Used: {:.3f}s".format(now - start_time))
                     start_time = now
 
-                if current_step % hp.chechpoint == 0:
+                if current_step % hp.checkpoint == 0:
                     file_path = os.path.join(checkpoint_path, 'checkpoint_{}.pth.tar'.format(current_step))
                     torch.save({'model': model.state_dict(), 'optimizer': optimizer.state_dict()}, file_path)
                     print("saving model at to {}".format(file_path))
@@ -164,9 +168,9 @@ def main(args):
                     mel_postnet = mel_postnet_output[0, :length].detach().cpu().transpose(0, 1)
 
                     if comet_experiment is not None:
-                        comet_experiment.log_audio(Audio.tools.inv_mel_spec(mel),
+                        comet_experiment.log_audio(audiotools.inv_mel_spec(mel),
                                                    hp.sampling_rate, "step_{}_griffin_lim.wav".format(current_step))
-                        comet_experiment.log_audio(Audio.tools.inv_mel_spec(mel_postnet),
+                        comet_experiment.log_audio(audiotools.inv_mel_spec(mel_postnet),
                                                    hp.sampling_rate, "step_{}_postnet_griffin_lim.wav".format(current_step))
                         comet_experiment.log_audio(vocoder_infer(mel_torch, vocoder), hp.sampling_rate,
                                                    'step_{}_{}.wav'.format(current_step, hp.vocoder))
