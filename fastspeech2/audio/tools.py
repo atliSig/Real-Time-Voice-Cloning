@@ -21,8 +21,7 @@ def load_wav_to_torch(full_path):
 def get_mel(filename):
     audio, sampling_rate = load_wav_to_torch(filename)
     if sampling_rate != _stft.sampling_rate:
-        raise ValueError("{} {} SR doesn't match target {} SR".format(
-            sampling_rate, _stft.sampling_rate))
+        raise ValueError("{} SR doesn't match target {} SR".format(sampling_rate, _stft.sampling_rate))
     audio_norm = audio / hparams.max_wav_value
     audio_norm = audio_norm.unsqueeze(0)
     audio_norm = torch.autograd.Variable(audio_norm, requires_grad=False)
@@ -37,8 +36,7 @@ def get_mel(filename):
 def get_mel_from_wav(audio):
     sampling_rate = hparams.sampling_rate
     if sampling_rate != _stft.sampling_rate:
-        raise ValueError("{} {} SR doesn't match target {} SR".format(
-            sampling_rate, _stft.sampling_rate))
+        raise ValueError("{} SR doesn't match target {} SR".format(sampling_rate, _stft.sampling_rate))
     audio_norm = audio / hparams.max_wav_value
     audio_norm = audio_norm.unsqueeze(0)
     audio_norm = torch.autograd.Variable(audio_norm, requires_grad=False)
