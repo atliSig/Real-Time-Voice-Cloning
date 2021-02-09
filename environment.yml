@@ -7,7 +7,7 @@ dependencies:
   - blas=1.0=mkl
   - ca-certificates=2021.1.19=h06a4308_0
   - certifi=2020.12.5=py38h06a4308_0
-  - cudatoolkit=10.2.89=hfd86e86_1
+  - cudatoolkit=9.2
   - cycler=0.10.0=py38_0
   - dbus=1.13.18=hb2f20db_0
   - expat=2.2.10=he6710b0_2
