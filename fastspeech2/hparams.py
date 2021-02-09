@@ -75,7 +75,7 @@ class HyperParameters:
     log_offset: float = 1.
 
     # Save, log and synthesis
-    chechpoint: int = 10000
+    checkpoint: int = 10000
     synth_step: int = 100
     eval_step: int = 100
     # eval_size: int = 256
