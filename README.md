@@ -48,3 +48,4 @@ export COMET_API_KEY=BtyTwUoagGMh3uN4VZt6gMOn8
 # Use the right file 
 comet upload /tmp/comet/5da271fcb60b4652a51dfc0decbe7cd9.zip
 ``
+Make sure that you can distinguish which is the correct experiment file name. This is printed to stdout after the experiment is finished.
