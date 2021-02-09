@@ -76,7 +76,7 @@ def main(args):
         )
         comet_experiment.set_name(args.experiment_name)
         comet_experiment.log_parameters(hp)
-        # comet_experiment.log_html(args.m)
+        comet_experiment.log_html(args.m)
 
     start_time = time.perf_counter()
     # Training
@@ -204,6 +204,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--restore_step', type=int, default=0)
     parser.add_argument('--experiment-name', type=str, required=True)
-    # parser.add_argument('-m', type=str, required=True)
+    parser.add_argument('-m', type=str, default="")
     args = parser.parse_args()
     main(args)
