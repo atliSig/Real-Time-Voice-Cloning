@@ -10,8 +10,6 @@ class HyperParameters:
     dataset: str = "LJSpeech"
     data_path: str =  os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models")
-    # data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"
-    # models_path: str = "/home/rokas/year4/mlp/cw3/data/models"
     # Text
     text_cleaners: List[str] = field(default_factory=['english_cleaners'])
     ### LJSpeech ###
@@ -41,20 +39,26 @@ class HyperParameters:
 
     max_seq_len: int = 1000
 
-    ### LJSpeech ###
-    f0_min: float = 71.0
-    f0_max: float = 795.8
-    energy_min: float = 0.0
-    energy_max: float = 315.0
-    n_bins: int = 256
+    # Quantization for F0 and energy
+    ### for LJSpeech ###
+    f0_min = 71.0
+    f0_max = 795.8
+    energy_min = 0.0
+    energy_max = 315.0
+
+    n_bins = 256
 
     # Checkpoints and synthesis path
     preprocessed_path: str = os.path.join(data_path, "preprocessed")
-    checkpoint_path: str = models_path
-    synth_path: str = os.path.join("./synth/", dataset)
-    eval_path: str = os.path.join("./eval/", dataset)
-    log_path: str = os.path.join("./log/", dataset)
-    test_path: str = "./results"
+    checkpoint_path: str = os.path.join(models_path, "ckpt")
+    synth_path: str = os.path.join(models_path, "synth")
+    eval_path: str = os.path.join(models_path, "eval")
+    log_path: str = os.path.join(models_path, "log")
+    test_path: str = os.path.join(models_path, "results")
+    # synth_path: str = os.path.join("./synth/", dataset)
+    # eval_path: str = os.path.join("./eval/", dataset)
+    # log_path: str = os.path.join("./log/", dataset)
+    # test_path: str = "./results"
 
     # Optimizer
     lr: float = 1e-3
@@ -69,14 +73,17 @@ class HyperParameters:
     weight_decay: float = 0.
 
     # Vocoder
-    vocoder: str = 'waveglow'  # 'waveglow' or 'melgan'
+    vocoder: str = 'melgan'  # 'waveglow' or 'melgan'
 
     # Log-scaled duration
     log_offset: float = 1.
 
     # Save, log and synthesis
+    #save_step = 10000
     checkpoint: int = 10000
     synth_step: int = 100
     eval_step: int = 100
     # eval_size: int = 256
     log_step: int = 100
+
+
