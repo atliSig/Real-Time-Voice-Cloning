@@ -70,8 +70,7 @@ class Encoder(nn.Module):
             enc_output = self.src_word_emb(src_seq) + get_sinusoid_encoding_table(src_seq.shape[1], hp.encoder_hidden)[
                 :src_seq.shape[1], :].unsqueeze(0).expand(batch_size, -1, -1).to(src_seq.device)
         else:
-            enc_output = self.src_word_emb(
-                src_seq) + self.position_enc[:, :max_len, :].expand(batch_size, -1, -1)
+            enc_output = self.src_word_emb(src_seq) + self.position_enc[:, :max_len, :].expand(batch_size, -1, -1)
 
         for enc_layer in self.layer_stack:
             enc_output, enc_slf_attn = enc_layer(
@@ -89,12 +88,12 @@ class Decoder(nn.Module):
 
     def __init__(self,
                  len_max_seq=hp.max_seq_len,
-                 d_word_vec=hp.encoder_hidden,
+                 d_word_vec=hp.encoder_hidden+hp.speaker_encoder_dim,
                  n_layers=hp.decoder_layer,
                  n_head=hp.decoder_head,
-                 d_k=hp.decoder_hidden // hp.decoder_head,
-                 d_v=hp.decoder_hidden // hp.decoder_head,
-                 d_model=hp.decoder_hidden,
+                 d_k=(hp.decoder_hidden + hp.speaker_encoder_dim) // hp.decoder_head,
+                 d_v=(hp.decoder_hidden + hp.speaker_encoder_dim) // hp.decoder_head,
+                 d_model=(hp.decoder_hidden + hp.speaker_encoder_dim),
                  d_inner=hp.fft_conv1d_filter_size,
                  dropout=hp.decoder_dropout):
 
@@ -121,8 +120,7 @@ class Decoder(nn.Module):
             dec_output = enc_seq + get_sinusoid_encoding_table(enc_seq.shape[1], hp.decoder_hidden)[
                 :enc_seq.shape[1], :].unsqueeze(0).expand(batch_size, -1, -1).to(enc_seq.device)
         else:
-            dec_output = enc_seq + \
-                self.position_enc[:, :max_len, :].expand(batch_size, -1, -1)
+            dec_output = enc_seq + self.position_enc[:, :max_len, :].expand(batch_size, -1, -1)
 
         for dec_layer in self.layer_stack:
             dec_output, dec_slf_attn = dec_layer(

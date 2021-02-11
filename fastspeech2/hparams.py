@@ -41,6 +41,10 @@ class HyperParameters:
 
     max_seq_len: int = 1000
 
+    # Speaker Encoder
+    speaker_encoder_dim: int = 256
+    # speaker_encoder_dim: int = 0
+
     ### LJSpeech ###
     f0_min: float = 71.0
     f0_max: float = 795.8
@@ -69,7 +73,7 @@ class HyperParameters:
     weight_decay: float = 0.
 
     # Vocoder
-    vocoder: str = 'waveglow'  # 'waveglow' or 'melgan'
+    vocoder: str = 'melgan'  # 'waveglow' or 'melgan'
 
     # Log-scaled duration
     log_offset: float = 1.

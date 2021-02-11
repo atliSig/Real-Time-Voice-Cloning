@@ -32,6 +32,7 @@ def main(args):
 
     # Define model
     model = nn.DataParallel(FastSpeech2()).to(device)
+    # print(model)
     print("Model Has Been Defined")
     num_param = utils.get_param_num(model)
     print('Number of FastSpeech2 Parameters:', num_param)

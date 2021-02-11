@@ -20,7 +20,7 @@ class FastSpeech2(nn.Module):
         self.variance_adaptor = VarianceAdaptor()
 
         self.decoder = Decoder()
-        self.mel_linear = nn.Linear(hp.decoder_hidden, hp.n_mel_channels)
+        self.mel_linear = nn.Linear(hp.decoder_hidden + hp.speaker_encoder_dim, hp.n_mel_channels)
 
         self.use_postnet = use_postnet
         if self.use_postnet:
@@ -32,6 +32,12 @@ class FastSpeech2(nn.Module):
             mel_len, max_mel_len) if mel_len is not None else None
 
         encoder_output = self.encoder(src_seq, src_mask)
+
+        speaker_embedding = torch.zeros(encoder_output.shape[0], encoder_output.shape[1], hp.speaker_encoder_dim,
+                                        device=encoder_output.device)
+
+        encoder_output = torch.cat((encoder_output, speaker_embedding), 2)
+
         if d_target is not None:
             variance_adaptor_output, d_prediction, p_prediction, e_prediction, _, _ = self.variance_adaptor(
                 encoder_output, src_mask, mel_mask, d_target, p_target, e_target, max_mel_len, d_control, p_control, e_control)
