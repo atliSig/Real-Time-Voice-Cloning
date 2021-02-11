@@ -65,14 +65,14 @@ rsync -a /home/s1841215/Real-Time-Voice-Cloning/fastspeech2/data/LJSpeech-1.1 /d
 
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd /home/s1841215/Real-Time-Voice-Cloning/fastspeech2
-python train.py --experiment-name 'train_test_exp2'
+python train.py --experiment-name 'train_test_exp3'
 
 # mkdir -p /home/${STUDENT_ID}/models/
 # rsync -a /disk/scratch/s1841215/data/models /home/${STUDENT_ID}/models/
 
 # upload most recent model
-exit
-cd /home/${STUDENT_ID}/models/
-source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
-fn=$(ls -t | head -n1)
-comet upload "$fn"
+# exit
+# cd /home/${STUDENT_ID}/models/
+# source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
+# fn=$(ls -t | head -n1)
+# comet upload "$fn"
