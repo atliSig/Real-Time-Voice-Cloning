@@ -9,7 +9,7 @@ class HyperParameters:
     # Dataset
     dataset: str = "LJSpeech"
     data_path: str =  os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
-    models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models")
+    models_path: str = os.environ.get('MODEL_HOME_DIR', "/home/rokas/year4/mlp/cw3/data/models")
     # Text
     text_cleaners: List[str] = field(default_factory=['english_cleaners'])
     ### LJSpeech ###
@@ -80,10 +80,10 @@ class HyperParameters:
 
     # Save, log and synthesis
     #save_step = 10000
-    checkpoint: int = 10000
-    synth_step: int = 100
-    eval_step: int = 100
+    checkpoint: int = 1000
+    synth_step: int = 1000
+    eval_step: int = 1000
     # eval_size: int = 256
-    log_step: int = 100
-
+    log_step: int = 1000
+    #clear_Time = 20
 

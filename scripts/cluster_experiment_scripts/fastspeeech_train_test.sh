@@ -39,6 +39,9 @@ export DATA_DIR=${TMP}/data/
 mkdir -p ${DATA_DIR}/models/
 export MODEL_DIR=${DATA_DIR}/models/
 
+mkdir -p /home/${STUDENT_ID}/models/
+export MODEL_HOME_DIR=/home/${STUDENT_ID}/models/
+
 # Comet
 
 # mkdir -p /home/${STUDENT_ID}/models/
@@ -64,8 +67,8 @@ source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd /home/s1841215/Real-Time-Voice-Cloning/fastspeech2
 python train.py --experiment-name 'train_test_exp2'
 
-mkdir -p /home/${STUDENT_ID}/models/
-rsync -a /disk/scratch/s1841215/data/models /home/${STUDENT_ID}/models/
+# mkdir -p /home/${STUDENT_ID}/models/
+# rsync -a /disk/scratch/s1841215/data/models /home/${STUDENT_ID}/models/
 
 # upload most recent model
 exit
