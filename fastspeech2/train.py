@@ -95,20 +95,14 @@ def main(args):
                 current_step = i * hp.batch_size + j + args.restore_step + epoch * len(loader) * hp.batch_size + 1
 
                 # Get Data
-                text = torch.from_numpy(
-                    data_of_batch["text"]).long().to(device)
-                mel_target = torch.from_numpy(
-                    data_of_batch["mel_target"]).float().to(device)
+                text = torch.from_numpy(data_of_batch["text"]).long().to(device)
+                mel_target = torch.from_numpy(data_of_batch["mel_target"]).float().to(device)
                 D = torch.from_numpy(data_of_batch["D"]).long().to(device)
-                log_D = torch.from_numpy(
-                    data_of_batch["log_D"]).float().to(device)
+                log_D = torch.from_numpy(data_of_batch["log_D"]).float().to(device)
                 f0 = torch.from_numpy(data_of_batch["f0"]).float().to(device)
-                energy = torch.from_numpy(
-                    data_of_batch["energy"]).float().to(device)
-                src_len = torch.from_numpy(
-                    data_of_batch["src_len"]).long().to(device)
-                mel_len = torch.from_numpy(
-                    data_of_batch["mel_len"]).long().to(device)
+                energy = torch.from_numpy(data_of_batch["energy"]).float().to(device)
+                src_len = torch.from_numpy(data_of_batch["src_len"]).long().to(device)
+                mel_len = torch.from_numpy(data_of_batch["mel_len"]).long().to(device)
                 max_src_len = np.max(data_of_batch["src_len"]).astype(np.int32)
                 max_mel_len = np.max(data_of_batch["mel_len"]).astype(np.int32)
 
