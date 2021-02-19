@@ -48,3 +48,35 @@ export COMET_API_KEY=BtyTwUoagGMh3uN4VZt6gMOn8
 # Use the right file 
 comet upload /tmp/comet/5da271fcb60b4652a51dfc0decbe7cd9.zip
 ``
+
+
+# Pre processing
+
+
+```
+- Download & unzip the correct VCTK
+https://datashare.ed.ac.uk/handle/10283/2651
+
+wget https://datashare.ed.ac.uk/bitstream/handle/10283/2651/VCTK-Corpus.zip
+
+unzip -q VCTK-Corpus.zip
+
+- set data path in hparams.py
+./VCTK-Corpus
+
+- pre-align
+python prepare_align.py
+
+- mfa download
+wget https://github.com/MontrealCorpusTools/Montreal-Forced-Aligner/releases/download/v1.1.0-beta.2/montreal-forced-aligner_linux.tar.gz
+tar -zxvf montreal-forced-aligner_linux.tar.gz
+
+wget http://www.openslr.org/resources/11/librispeech-lexicon.txt -O montreal-forced-aligner/pretrained_models/librispeech-lexicon.txt
+
+- run mfa
+# Replace the paths as appropriate
+./montreal-forced-aligner/bin/mfa_align /home/matin/mlp-cw3/Real-Time-Voice-Cloning/fastspeech2/datasets/VCTK-Corpus/wav48 montreal-forced-aligner/pretrained_models/librispeech-lexicon.txt english ./preprocessed/VCTK/TextGrid -j 8
+
+- run prepocess
+python preprocess.py
+```

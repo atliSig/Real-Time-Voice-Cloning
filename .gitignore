@@ -18,4 +18,9 @@ voice_cloning/encoder/saved_models/*
 voice_cloning/synthesizer/saved_models/*
 voice_cloning/vocoder/saved_models/*
 
+fastspeech2/datasets
+fastspeech2/preprocessed
+fastspeech2/datasets/*
+fastspeech2/montreal-forced-aligner/*
+
 .vscode

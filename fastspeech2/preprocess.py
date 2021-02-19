@@ -1,6 +1,6 @@
 import os
-from data import ljspeech, blizzard2013
-import hparams as hp
+from data import ljspeech, blizzard2013, vctk
+from hparams import HyperParameters as hp
 
 
 def write_metadata(train, val, out_dir):
@@ -32,6 +32,9 @@ def main():
         train, val = ljspeech.build_from_path(in_dir, out_dir)
     if hp.dataset == "Blizzard2013":
         train, val = blizzard2013.build_from_path(in_dir, out_dir)
+    if hp.dataset == "VCTK":
+        print("preprocess VCTK")
+        train, val = vctk.build_from_path(in_dir, out_dir)
     write_metadata(train, val, out_dir)
 
 
