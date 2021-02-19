@@ -1,5 +1,5 @@
-from encoder.params_model import *
-from encoder.params_data import *
+from voice_cloning.encoder import params_model
+from voice_cloning.encoder import params_data
 from scipy.interpolate import interp1d
 from sklearn.metrics import roc_curve
 from torch.nn.utils import clip_grad_norm_
@@ -14,13 +14,13 @@ class SpeakerEncoder(nn.Module):
         super().__init__()
         self.loss_device = loss_device
         
-        # Network defition
-        self.lstm = nn.LSTM(input_size=mel_n_channels,
-                            hidden_size=model_hidden_size, 
-                            num_layers=model_num_layers, 
+        # Network definition
+        self.lstm = nn.LSTM(input_size=params_data.mel_n_channels,
+                            hidden_size=params_model.model_hidden_size,
+                            num_layers=params_model.model_num_layers,
                             batch_first=True).to(device)
-        self.linear = nn.Linear(in_features=model_hidden_size, 
-                                out_features=model_embedding_size).to(device)
+        self.linear = nn.Linear(in_features=params_model.model_hidden_size,
+                                out_features=params_model.model_embedding_size).to(device)
         self.relu = torch.nn.ReLU().to(device)
         
         # Cosine similarity scaling (with fixed initial parameter values)

@@ -8,6 +8,10 @@ import numpy as np
 import argparse
 import os
 import time
+from pathlib import Path
+
+from voice_cloning.encoder.model import SpeakerEncoder
+from voice_cloning.encoder.inference import load_model as load_speaker_encoder
 
 from fastspeech2 import FastSpeech2
 from loss import FastSpeech2Loss
@@ -30,18 +34,19 @@ def main(args):
     loader = DataLoader(dataset, batch_size=hp.batch_size**2, shuffle=True,
                         collate_fn=dataset.collate_fn, drop_last=True, num_workers=0)
 
+    speaker_encoder = load_speaker_encoder(Path(hp.speaker_encoder_path), device).to(device)
+    for param in speaker_encoder.parameters():
+        param.requires_grad = False
+
     # Define model
-    model = nn.DataParallel(FastSpeech2()).to(device)
-    # print(model)
+    model = nn.DataParallel(FastSpeech2(speaker_encoder)).to(device)
     print("Model Has Been Defined")
     num_param = utils.get_param_num(model)
     print('Number of FastSpeech2 Parameters:', num_param)
 
     # Optimizer and loss
-    optimizer = torch.optim.Adam(model.parameters(),
-                                 lr=1e-4, betas=hp.betas, eps=hp.eps, weight_decay=hp.weight_decay)
-    scheduled_optim = ScheduledOptim(
-        optimizer, hp.decoder_hidden, hp.n_warm_up_step, args.restore_step)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, betas=hp.betas, eps=hp.eps, weight_decay=hp.weight_decay)
+    scheduled_optim = ScheduledOptim(optimizer, hp.decoder_hidden, hp.n_warm_up_step, args.restore_step)
     Loss = FastSpeech2Loss().to(device)
     print("Optimizer and Loss Function Defined.")
 
@@ -85,6 +90,11 @@ def main(args):
 
     start_time = time.perf_counter()
     # Training
+    first_mel_train_loss, first_postnet_train_loss, first_d_train_loss, first_f_train_loss, first_e_train_loss = \
+        None, None, None, None, None
+    first_mel_valid_loss, first_postnet_valid_loss, first_d_valid_loss, first_f_valid_loss, first_e_valid_loss = \
+        None, None, None, None, None
+    
     for epoch in range(hp.epochs):
         # Get Training Loader
         total_step = hp.epochs * len(loader) * hp.batch_size
@@ -107,22 +117,36 @@ def main(args):
                 max_mel_len = np.max(data_of_batch["mel_len"]).astype(np.int32)
 
                 # Forward
-                mel_output, mel_postnet_output, log_duration_output, f0_output, energy_output, src_mask, mel_mask, _ = model(
-                    text, src_len, mel_len, D, f0, energy, max_src_len, max_mel_len)
+                mel_output, mel_postnet_output, log_duration_output, f0_output, energy_output, src_mask, mel_mask, _ = \
+                    model(text, src_len, mel_target, mel_len, D, f0, energy, max_src_len, max_mel_len)
 
                 # Cal Loss
                 mel_loss, mel_postnet_loss, d_loss, f_loss, e_loss = Loss(
                     log_duration_output, log_D, f0_output, f0, energy_output, energy, mel_output, mel_postnet_output, mel_target, ~src_mask, ~mel_mask)
                 total_loss = mel_loss + mel_postnet_loss + d_loss + f_loss + e_loss
 
+                # Set initial values for scaling
+                if first_mel_train_loss is None:
+                    first_mel_train_loss = mel_loss
+                    first_postnet_train_loss = mel_postnet_loss
+                    first_d_train_loss = d_loss
+                    first_f_train_loss = f_loss
+                    first_e_train_loss = e_loss
+
+                mel_l = mel_loss.item() / first_mel_train_loss
+                mel_postnet_l = mel_postnet_loss.item() / first_postnet_train_loss
+                d_l = d_loss.item() / first_d_train_loss
+                f_l = f_loss.item() / first_f_train_loss
+                e_l = e_loss.item() / first_e_train_loss
+
                 # Logger
                 if comet_experiment is not None:
-                    comet_experiment.log_metric("total_loss", total_loss.item(), current_step)
-                    comet_experiment.log_metric("mel_loss", mel_loss.item(), current_step)
-                    comet_experiment.log_metric("mel_postnet_loss", mel_postnet_loss.item(), current_step)
-                    comet_experiment.log_metric("duration_loss", d_loss.item(), current_step)
-                    comet_experiment.log_metric("f0_loss", f_loss.item(), current_step)
-                    comet_experiment.log_metric("energy_loss", e_loss.item(), current_step)
+                    comet_experiment.log_metric("total_loss", mel_l+mel_postnet_l+d_l+f_l+e_l, current_step)
+                    comet_experiment.log_metric("mel_loss", mel_l, current_step)
+                    comet_experiment.log_metric("mel_postnet_loss", mel_postnet_l, current_step)
+                    comet_experiment.log_metric("duration_loss", d_l, current_step)
+                    comet_experiment.log_metric("f0_loss", f_l, current_step)
+                    comet_experiment.log_metric("energy_loss", e_l, current_step)
 
                 # Backward
                 total_loss = total_loss / hp.acc_steps
@@ -143,8 +167,8 @@ def main(args):
 
                     print("\nEpoch [{}/{}], Step [{}/{}]:".format(epoch+1, hp.epochs, current_step, total_step))
                     print("Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Duration Loss: {:.4f}, "
-                           "F0 Loss: {:.4f}, Energy Loss: {:.4f};".format(total_loss.item(), mel_loss.item(),
-                          mel_postnet_loss.item(), d_loss.item(), f_loss.item(), e_loss.item()))
+                           "F0 Loss: {:.4f}, Energy Loss: {:.4f};".format(mel_l+mel_postnet_l+d_l+f_l+e_l, mel_l,
+                                                                          mel_postnet_l, d_l, f_l, e_l))
                     print("Time Used: {:.3f}s".format(now - start_time))
                     start_time = now
 

@@ -1,10 +1,12 @@
-from encoder.visualizations import Visualizations
-from encoder.data_objects import SpeakerVerificationDataLoader, SpeakerVerificationDataset
-from encoder.params_model import *
-from encoder.model import SpeakerEncoder
-from utils.profiler import Profiler
+from voice_cloning.encoder.visualizations import Visualizations
+from voice_cloning.encoder.data_objects.speaker_verification_dataset import SpeakerVerificationDataLoader, \
+    SpeakerVerificationDataset
+from voice_cloning.encoder.params_model import *
+from voice_cloning.encoder.model import SpeakerEncoder
+from voice_cloning.utils.profiler import Profiler
 from pathlib import Path
 import torch
+
 
 def sync(device: torch.device):
     # For correct profiling (cuda operations are async)

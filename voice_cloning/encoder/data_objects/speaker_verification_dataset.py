@@ -1,11 +1,12 @@
-from encoder.data_objects.random_cycler import RandomCycler
-from encoder.data_objects.speaker_batch import SpeakerBatch
-from encoder.data_objects.speaker import Speaker
-from encoder.params_data import partials_n_frames
+from voice_cloning.encoder.data_objects.random_cycler import RandomCycler
+from voice_cloning.encoder.data_objects.speaker_batch import SpeakerBatch
+from voice_cloning.encoder.data_objects.speaker import Speaker
+from voice_cloning.encoder.params_data import partials_n_frames
 from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
 
 # TODO: improve with a pool of speakers for data efficiency
+
 
 class SpeakerVerificationDataset(Dataset):
     def __init__(self, datasets_root: Path):

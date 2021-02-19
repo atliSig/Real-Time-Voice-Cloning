@@ -1,8 +1,8 @@
-from encoder.params_data import *
-from encoder.model import SpeakerEncoder
-from encoder.audio import preprocess_wav   # We want to expose this function from here
+from voice_cloning.encoder.params_data import *
+from voice_cloning.encoder.model import SpeakerEncoder
+from voice_cloning.encoder.audio import preprocess_wav   # We want to expose this function from here
 from matplotlib import cm
-from encoder import audio
+from voice_cloning.encoder import audio
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,6 +34,7 @@ def load_model(weights_fpath: Path, device=None):
     _model.load_state_dict(checkpoint["model_state"])
     _model.eval()
     print("Loaded encoder \"%s\" trained to step %d" % (weights_fpath.name, checkpoint["step"]))
+    return _model
     
     
 def is_loaded():
