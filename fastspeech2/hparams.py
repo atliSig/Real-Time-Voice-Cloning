@@ -61,9 +61,9 @@ class HyperParameters:
     test_path: str = "./results"
 
     # Optimizer
-    lr: float = 1e-3
-    batch_size: int = 8
-    epochs: int = 1000
+    lr: float = 1e-4
+    batch_size: int = 4
+    epochs: int = 10
     n_warm_up_step: int = 4000
     grad_clip_thresh: float = 1.0
     acc_steps: int = 1
@@ -73,14 +73,17 @@ class HyperParameters:
     weight_decay: float = 0.
 
     # Vocoder
-    vocoder: str = 'melgan'  # 'waveglow' or 'melgan'
+    vocoder: str = 'waveglow'  # 'waveglow' or 'melgan'
 
     # Log-scaled duration
     log_offset: float = 1.
 
     # Save, log and synthesis
     checkpoint: int = 10000
-    synth_step: int = 100
-    eval_step: int = 100
+    synth_step: int = 500
+    eval_step: int = 500
     # eval_size: int = 256
     log_step: int = 100
+
+    # Speaker Encoder
+    speaker_encoder_path: str = "/home/rokas/year4/mlp/cw3/data/models/speaker_encoder/pretrained.pt"
