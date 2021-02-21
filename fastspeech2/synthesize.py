@@ -9,11 +9,12 @@ from g2p_en import G2p
 
 from fastspeech2 import FastSpeech2
 from text import text_to_sequence, sequence_to_text
-import hparams as hp
+from hparams import HyperParameters
 import utils
 import audio as Audio
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+hp = HyperParameters()
 
 
 def preprocess(text):
@@ -64,20 +65,20 @@ def synthesize(model, waveglow, melgan, text, sentence, prefix='',
     Audio.tools.inv_mel_spec(mel_postnet, os.path.join(
         hp.test_path, '{}_griffin_lim_{}.wav'.format(prefix, sentence)))
     if waveglow is not None:
-        utils.waveglow_infer(mel_postnet_torch, waveglow, os.path.join(
-            hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)))
+        utils.waveglow_infer(mel_postnet_torch, waveglow,
+                             os.path.join(hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)))
     if melgan is not None:
-        utils.melgan_infer(mel_postnet_torch, melgan, os.path.join(
-            hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)))
+        utils.melgan_infer(mel_postnet_torch, melgan,
+                           os.path.join(hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)))
 
-    utils.plot_data([(mel_postnet.numpy(), f0_output, energy_output)], [
-                    'Synthesized Spectrogram'], filename=os.path.join(hp.test_path, '{}_{}.png'.format(prefix, sentence)))
+    utils.plot_data([(mel_postnet.numpy(), f0_output, energy_output)], ['Synthesized Spectrogram'],
+                    filename=os.path.join(hp.test_path, '{}_{}.png'.format(prefix, sentence)))
 
 
 if __name__ == "__main__":
     # Test
     parser = argparse.ArgumentParser()
-    parser.add_argument('--step', type=int, default=30000)
+    parser.add_argument('--step', type=int, default=300000)
     parser.add_argument('--duration_control', type=float, default=1.0)
     parser.add_argument('--pitch_control', type=float, default=1.0)
     parser.add_argument('--energy_control', type=float, default=1.0)

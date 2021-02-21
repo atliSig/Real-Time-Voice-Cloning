@@ -8,12 +8,12 @@ class HyperParameters:
     experiment_name = "experiment_name"
     # Dataset
     dataset: str = "LJSpeech"
-    data_path: str =  os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
-    models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models")
+    data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
+    models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/fastspeech2")
     # data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"
     # models_path: str = "/home/rokas/year4/mlp/cw3/data/models"
     # Text
-    text_cleaners: List[str] = field(default_factory=['english_cleaners'])
+    text_cleaners: List = field(default_factory=lambda: ['english_cleaners'])
     ### LJSpeech ###
     sampling_rate: int = 22050
     filter_length: int = 1024
@@ -42,8 +42,8 @@ class HyperParameters:
     max_seq_len: int = 1000
 
     # Speaker Encoder
-    speaker_encoder_dim: int = 256
-    # speaker_encoder_dim: int = 0
+    # speaker_encoder_dim: int = 256
+    speaker_encoder_dim: int = 0
 
     ### LJSpeech ###
     f0_min: float = 71.0
