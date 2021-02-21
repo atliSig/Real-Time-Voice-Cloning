@@ -33,7 +33,6 @@ def main():
     if hp.dataset == "Blizzard2013":
         train, val = blizzard2013.build_from_path(in_dir, out_dir)
     if hp.dataset == "VCTK":
-        print("preprocess VCTK")
         train, val = vctk.build_from_path(in_dir, out_dir)
     write_metadata(train, val, out_dir)
 
