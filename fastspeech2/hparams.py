@@ -87,3 +87,5 @@ class HyperParameters:
 
     # Speaker Encoder
     speaker_encoder_path: str = "/home/rokas/year4/mlp/cw3/data/models/speaker_encoder/pretrained.pt"
+    # speaker_encoder_path: str = ""
+    train_speaker_encoder: bool = False

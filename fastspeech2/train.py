@@ -34,9 +34,12 @@ def main(args):
     loader = DataLoader(dataset, batch_size=hp.batch_size**2, shuffle=True,
                         collate_fn=dataset.collate_fn, drop_last=True, num_workers=0)
 
-    speaker_encoder = load_speaker_encoder(Path(hp.speaker_encoder_path), device).to(device)
-    for param in speaker_encoder.parameters():
-        param.requires_grad = False
+    speaker_encoder = None
+    if hp.speaker_encoder_path != "":
+        speaker_encoder = load_speaker_encoder(Path(hp.speaker_encoder_path), device).to(device)
+        if not hp.train_speaker_encoder:
+            for param in speaker_encoder.parameters():
+                param.requires_grad = False
 
     # Define model
     model = nn.DataParallel(FastSpeech2(speaker_encoder)).to(device)

@@ -18,7 +18,7 @@ class FastSpeech2(nn.Module):
         super(FastSpeech2, self).__init__()
 
         self.encoder = Encoder()
-        if speaker_encoder is not None:
+        if speaker_encoder:
             self.speaker_encoder = lambda x: speaker_encoder(x[:, :, :params_data.mel_n_channels])
         else:
             self.speaker_encoder = None
