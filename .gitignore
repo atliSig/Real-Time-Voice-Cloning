@@ -18,6 +18,9 @@
 voice_cloning/encoder/saved_models/*
 voice_cloning/synthesizer/saved_models/*
 voice_cloning/vocoder/saved_models/*
+voice-cloning/encoder/saved_models/*
+voice-cloning/synthesizer/saved_models/*
+voice-cloning/vocoder/saved_models/*
 
 speaker_verification/data/*
 
