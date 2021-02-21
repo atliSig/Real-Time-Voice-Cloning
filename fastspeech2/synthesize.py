@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from scipy.io.wavfile import write
 import os
 import argparse
 import re
@@ -9,12 +10,13 @@ from g2p_en import G2p
 
 from fastspeech2 import FastSpeech2
 from text import text_to_sequence, sequence_to_text
-import hparams as hp
+from hparams import HyperParameters as hp
 import utils
 import audio as Audio
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+hp.text_cleaners = ['english_cleaners'] #HACK
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def preprocess(text):
     text = text.rstrip(punctuation)
@@ -37,7 +39,7 @@ def get_FastSpeech2(num):
     checkpoint_path = os.path.join(
         hp.checkpoint_path, "checkpoint_{}.pth.tar".format(num))
     model = nn.DataParallel(FastSpeech2())
-    model.load_state_dict(torch.load(checkpoint_path)['model'])
+    model.load_state_dict(torch.load(checkpoint_path, map_location=device)['model'])
     model.requires_grad = False
     model.eval()
     return model
@@ -61,17 +63,25 @@ def synthesize(model, waveglow, melgan, text, sentence, prefix='',
 
     os.makedirs(hp.test_path, exist_ok=True)
 
-    Audio.tools.inv_mel_spec(mel_postnet, os.path.join(
-        hp.test_path, '{}_griffin_lim_{}.wav'.format(prefix, sentence)))
+    audio_out = Audio.tools.inv_mel_spec(mel_postnet)
+    write(
+        os.path.join(hp.test_path, '{}_griffin_lim_{}.wav'.format(prefix, sentence)),
+        hp.sampling_rate,
+        audio_out)
     if waveglow is not None:
-        utils.waveglow_infer(mel_postnet_torch, waveglow, os.path.join(
-            hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)))
+        audio_out = utils.waveglow_infer(mel_postnet_torch, waveglow)
+        write(os.path.join(hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)),
+            hp.sampling_rate,
+            audio_out)
     if melgan is not None:
-        utils.melgan_infer(mel_postnet_torch, melgan, os.path.join(
-            hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)))
+        audio_out = utils.melgan_infer(mel_postnet_torch, melgan)
+        write(os.path.join(hp.test_path, '{}_{}_{}.wav'.format(prefix, hp.vocoder, sentence)),
+            hp.sampling_rate,
+            audio_out)
 
-    utils.plot_data([(mel_postnet.numpy(), f0_output, energy_output)], [
-                    'Synthesized Spectrogram'], filename=os.path.join(hp.test_path, '{}_{}.png'.format(prefix, sentence)))
+    # TODO: doesn't work because of file writing change
+    #utils.plot_data([(mel_postnet.numpy(), f0_output, energy_output)], [
+    #                'Synthesized Spectrogram'], filename=os.path.join(hp.test_path, '{}_{}.png'.format(prefix, sentence)))
 
 
 if __name__ == "__main__":
