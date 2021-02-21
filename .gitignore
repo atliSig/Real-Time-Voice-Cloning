@@ -19,9 +19,7 @@ voice_cloning/encoder/saved_models/*
 voice_cloning/synthesizer/saved_models/*
 voice_cloning/vocoder/saved_models/*
 
-speaker_verification/ground_truth_audio/*
-speaker_verification/synthesized_audio/*
-speaker_verification/embeddings/*
+speaker_verification/data/*
 
 fastspeech2/ckpt/*
 

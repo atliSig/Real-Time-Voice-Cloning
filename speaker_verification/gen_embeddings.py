@@ -22,10 +22,10 @@ if __name__ == '__main__':
         default="./voice_cloning/encoder/saved_models/pretrained.pt",
         help="Path to a saved encoder")
     parser.add_argument("--audio_dir",
-        default='./speaker_verification/ground_truth_audio',
+        default='./speaker_verification/data/ground_truth_audio',
         help="A path to a directory of ground truth audio")
     parser.add_argument("--output_dir",
-        default='./speaker_verification/embeddings',
+        default='./speaker_verification/data/embeddings',
         help="A path to a directory where generated embeddings will be stored")
     args = parser.parse_args()
     print_args(args, parser)

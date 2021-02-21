@@ -11,10 +11,10 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("--embed_dir",
-        default='./speaker_verification/embeddings',
+        default='./speaker_verification/data/embeddings',
         help="A path to a directory where generated embeddings will be stored")
     parser.add_argument("--out_path",
-        default='./speaker_verification/results.tsv',
+        default='./speaker_verification/data/results.tsv',
         help="A path to a TSV file where generated results will be written")
     args = parser.parse_args()
 
