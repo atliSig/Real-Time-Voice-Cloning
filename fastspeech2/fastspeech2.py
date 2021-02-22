@@ -1,12 +1,13 @@
 import torch
 import torch.nn as nn
 
-from transformer.Models import Encoder, Decoder
-from transformer.Layers import PostNet
-from modules import VarianceAdaptor
-from utils import get_mask_from_lengths
-from hparams import HyperParameters as hp
+from fastspeech2.transformer.Models import Encoder, Decoder
+from fastspeech2.transformer.Layers import PostNet
+from fastspeech2.modules import VarianceAdaptor
+from fastspeech2.utils import get_mask_from_lengths
+from fastspeech2.hparams import HyperParameters as hp
 from voice_cloning.encoder import params_data
+from voice_cloning.encoder.model import SpeakerEncoder
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -14,7 +15,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class FastSpeech2(nn.Module):
     """ FastSpeech2 """
 
-    def __init__(self, use_postnet=True, speaker_encoder=None):
+    def __init__(self, speaker_encoder: SpeakerEncoder=None, use_postnet=True):
         super(FastSpeech2, self).__init__()
 
         self.encoder = Encoder()

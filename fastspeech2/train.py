@@ -10,17 +10,16 @@ import os
 import time
 from pathlib import Path
 
-from voice_cloning.encoder.model import SpeakerEncoder
 from voice_cloning.encoder.inference import load_model as load_speaker_encoder
 
-from fastspeech2 import FastSpeech2
-from loss import FastSpeech2Loss
-from dataset import Dataset
-from optimizer import ScheduledOptim
-from evaluate import evaluate
-from hparams import HyperParameters as hp
-import utils
-from audio import tools as audiotools
+from fastspeech2.fastspeech2 import FastSpeech2
+from fastspeech2.loss import FastSpeech2Loss
+from fastspeech2.dataset import Dataset
+from fastspeech2.optimizer import ScheduledOptim
+from fastspeech2.evaluate import evaluate
+from fastspeech2.hparams import HyperParameters as hp
+import fastspeech2.utils as utils
+from fastspeech2.audio import tools as audiotools
 
 
 def main(args):
@@ -32,7 +31,7 @@ def main(args):
     # Get dataset
     dataset = Dataset("train.txt")
     loader = DataLoader(dataset, batch_size=hp.batch_size**2, shuffle=True,
-                        collate_fn=dataset.collate_fn, drop_last=True, num_workers=0)
+                        collate_fn=dataset.collate_fn, drop_last=True, num_workers=hp.num_workers)
 
     speaker_encoder = None
     if hp.speaker_encoder_path != "":

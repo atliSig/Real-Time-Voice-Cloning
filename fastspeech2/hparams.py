@@ -7,8 +7,9 @@ from typing import List, Tuple
 class HyperParameters:
     experiment_name = "experiment_name"
     # Dataset
-    dataset: str = "LJSpeech"
-    data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
+    dataset: str = "VCTK"
+    # data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
+    data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/VCTK"
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/fastspeech2")
     # data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"
     # models_path: str = "/home/rokas/year4/mlp/cw3/data/models"
@@ -42,8 +43,10 @@ class HyperParameters:
     max_seq_len: int = 1000
 
     # Speaker Encoder
-    # speaker_encoder_dim: int = 256
-    speaker_encoder_dim: int = 0
+    speaker_encoder_dim: int = 256
+    speaker_encoder_path: str = "/home/rokas/year4/mlp/cw3/data/models/speaker_encoder/pretrained.pt"
+    # speaker_encoder_path: str = ""
+    train_speaker_encoder: bool = False
 
     ### LJSpeech ###
     f0_min: float = 71.0
@@ -62,8 +65,9 @@ class HyperParameters:
 
     # Optimizer
     lr: float = 1e-4
-    batch_size: int = 4
+    batch_size: int = 2
     epochs: int = 10
+    num_workers: int = 0
     n_warm_up_step: int = 4000
     grad_clip_thresh: float = 1.0
     acc_steps: int = 1
@@ -84,8 +88,3 @@ class HyperParameters:
     eval_step: int = 500
     # eval_size: int = 256
     log_step: int = 100
-
-    # Speaker Encoder
-    speaker_encoder_path: str = "/home/rokas/year4/mlp/cw3/data/models/speaker_encoder/pretrained.pt"
-    # speaker_encoder_path: str = ""
-    train_speaker_encoder: bool = False

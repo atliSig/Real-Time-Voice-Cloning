@@ -1,3 +1,3 @@
-import audio.tools
-import audio.stft
-import audio.audio_processing
+import fastspeech2.audio.tools
+import fastspeech2.audio.stft
+import fastspeech2.audio.audio_processing
