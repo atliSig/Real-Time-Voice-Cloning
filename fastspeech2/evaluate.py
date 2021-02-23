@@ -1,20 +1,16 @@
+import numpy as np
+import os
+import argparse
+
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-import numpy as np
-import os
-import argparse
-import re
-from g2p_en import G2p
-
-from fastspeech2 import FastSpeech2
-from loss import FastSpeech2Loss
-from dataset import Dataset
-from text import text_to_sequence, sequence_to_text
-from hparams import HyperParameters as hp
-import utils
-import audio as Audio
+from fastspeech2.model import FastSpeech2
+from fastspeech2.loss import FastSpeech2Loss
+from fastspeech2.dataset import Dataset
+from fastspeech2.hparams import HyperParameters as hp
+import fastspeech2.utils as utils
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

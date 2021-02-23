@@ -12,7 +12,7 @@ from pathlib import Path
 
 from voice_cloning.encoder.inference import load_model as load_speaker_encoder
 
-from fastspeech2.fastspeech2 import FastSpeech2
+from fastspeech2.model import FastSpeech2
 from fastspeech2.loss import FastSpeech2Loss
 from fastspeech2.dataset import Dataset
 from fastspeech2.optimizer import ScheduledOptim
@@ -94,8 +94,6 @@ def main(args):
     # Training
     first_mel_train_loss, first_postnet_train_loss, first_d_train_loss, first_f_train_loss, first_e_train_loss = \
         None, None, None, None, None
-    first_mel_valid_loss, first_postnet_valid_loss, first_d_valid_loss, first_f_valid_loss, first_e_valid_loss = \
-        None, None, None, None, None
     
     for epoch in range(hp.epochs):
         # Get Training Loader
@@ -168,8 +166,8 @@ def main(args):
                     now = time.perf_counter()
 
                     print("\nEpoch [{}/{}], Step [{}/{}]:".format(epoch+1, hp.epochs, current_step, total_step))
-                    print("Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Duration Loss: {:.4f}, "
-                           "F0 Loss: {:.4f}, Energy Loss: {:.4f};".format(mel_l+mel_postnet_l+d_l+f_l+e_l, mel_l,
+                    print("Total Loss: {:.4f}, Mel Loss: {:.5f}, Mel PostNet Loss: {:.5f}, Duration Loss: {:.5f}, "
+                           "F0 Loss: {:.5f}, Energy Loss: {:.5f};".format(mel_l+mel_postnet_l+d_l+f_l+e_l, mel_l,
                                                                           mel_postnet_l, d_l, f_l, e_l))
                     print("Time Used: {:.3f}s".format(now - start_time))
                     start_time = now
