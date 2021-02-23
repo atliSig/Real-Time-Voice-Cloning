@@ -117,20 +117,6 @@ def evaluate(model, step, comet_experiment=None, vocoder=None):
     mel_l = sum(mel_l) / len(mel_l)
     mel_p_l = sum(mel_p_l) / len(mel_p_l)
 
-    # Set initial values for scaling
-    if evaluate.first_mel_loss is None:
-        evaluate.first_mel_loss = mel_l
-        evaluate.first_postnet_loss = mel_p_l
-        evaluate.first_d_loss = d_l
-        evaluate.first_f_loss = f_l
-        evaluate.first_e_loss = e_l
-
-    d_l /= evaluate.first_d_loss
-    f_l /= evaluate.first_f_loss
-    e_l /= evaluate.first_e_loss
-    mel_l /= evaluate.first_mel_loss
-    mel_p_l /= evaluate.first_postnet_loss
-
     print("\nFastSpeech2 Step {},".format(step))
     print("Duration Loss: {}".format(d_l))
     print("F0 Loss: {}".format(f_l))
