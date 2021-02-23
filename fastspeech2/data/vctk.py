@@ -3,11 +3,11 @@ import os
 import tgt
 import pyworld as pw
 import torch
-import audio as Audio
-from utils import get_alignment
-from text import _clean_text
+import fastspeech2.audio as Audio
+from fastspeech2.utils import get_alignment
+from fastspeech2.text import _clean_text
 import librosa
-from hparams import HyperParameters as hp
+from fastspeech2.hparams import HyperParameters as hp
 
 ### spk table ###
 def get_spk_table():
@@ -42,6 +42,7 @@ def build_from_path(in_dir, out_dir):
     index = 1
     train = list()
     val = list()
+    valid_perc = 0.1
     f0_max = energy_max = 0
     f0_min = energy_min = 1000000
     n_frames = 0
@@ -57,13 +58,12 @@ def build_from_path(in_dir, out_dir):
                     continue
                 else:
                     info, f_max, f_min, e_max, e_min, n = ret
-                """
-                if spker == 'p225':
+
+                rnd = np.random.rand()
+                if rnd <= valid_perc:
                     val.append(info)
                 else:
-                    train.append(info)                  
-                """
-                train.append(info)
+                    train.append(info)
                 
                 if index % 100 == 0:
                     print("Done %d" % index)

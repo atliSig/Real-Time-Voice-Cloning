@@ -49,8 +49,7 @@ def evaluate(model, step, comet_experiment=None, vocoder=None):
             # Get Data
             id_ = data_of_batch["id"]
             text = torch.from_numpy(data_of_batch["text"]).long().to(device)
-            mel_target = torch.from_numpy(
-                data_of_batch["mel_target"]).float().to(device)
+            mel_target = torch.from_numpy(data_of_batch["mel_target"]).float().to(device)
             D = torch.from_numpy(data_of_batch["D"]).int().to(device)
             log_D = torch.from_numpy(data_of_batch["log_D"]).int().to(device)
             f0 = torch.from_numpy(data_of_batch["f0"]).float().to(device)
@@ -63,11 +62,11 @@ def evaluate(model, step, comet_experiment=None, vocoder=None):
             with torch.no_grad():
                 # Forward
                 mel_output, mel_postnet_output, log_duration_output, f0_output, energy_output, src_mask, mel_mask, out_mel_len = model(
-                    text, src_len, mel_len, D, f0, energy, max_src_len, max_mel_len)
+                    text, src_len, mel_target, mel_len, D, f0, energy, max_src_len, max_mel_len)
 
                 # Cal Loss
-                mel_loss, mel_postnet_loss, d_loss, f_loss, e_loss = Loss(
-                    log_duration_output, log_D, f0_output, f0, energy_output, energy, mel_output, mel_postnet_output, mel_target, ~src_mask, ~mel_mask)
+                mel_loss, mel_postnet_loss, d_loss, f_loss, e_loss = Loss(log_duration_output, log_D, f0_output, f0,
+                    energy_output, energy, mel_output, mel_postnet_output, mel_target, ~src_mask, ~mel_mask)
 
                 d_l.append(d_loss.item())
                 f_l.append(f_loss.item())
