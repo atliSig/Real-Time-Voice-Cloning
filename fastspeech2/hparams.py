@@ -7,12 +7,10 @@ from typing import List, Tuple
 class HyperParameters:
     experiment_name = "experiment_name"
     # Dataset
+    num_workers: int = 4
     dataset: str = "VCTK"
-    # data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
-    data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/VCTK"
+    data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/fastspeech2")
-    # data_path: str = "/home/rokas/year4/mlp/cw3/data/datasets/LJSpeech-1.1"
-    # models_path: str = "/home/rokas/year4/mlp/cw3/data/models"
     # Text
     text_cleaners: List = field(default_factory=lambda: ['english_cleaners'])
     ### LJSpeech ###
@@ -57,21 +55,23 @@ class HyperParameters:
 
     # Checkpoints and synthesis path
     preprocessed_path: str = os.path.join(data_path, "preprocessed")
-    checkpoint_path: str = models_path
-    synth_path: str = os.path.join("./synth/", dataset)
-    eval_path: str = os.path.join("./eval/", dataset)
-    log_path: str = os.path.join("./log/", dataset)
-    test_path: str = "./results"
+    checkpoint_path: str = os.path.join(models_path, "ckpt")
+    synth_path: str = os.path.join(models_path, "synth")
+    eval_path: str = os.path.join(models_path, "eval")
+    log_path: str = os.path.join(models_path, "log")
+    test_path: str = os.path.join(models_path, "results")
+    # synth_path: str = os.path.join("./synth/", dataset)
+    # eval_path: str = os.path.join("./eval/", dataset)
+    # log_path: str = os.path.join("./log/", dataset)
+    # test_path: str = "./results"
 
     # Optimizer
-    lr: float = 1e-4
-    batch_size: int = 2
-    epochs: int = 10
-    num_workers: int = 0
+    lr: float = 1e-3
+    batch_size: int = 32
+    epochs: int = 1000
     n_warm_up_step: int = 4000
     grad_clip_thresh: float = 1.0
     acc_steps: int = 1
-
     betas: Tuple = (0.9, 0.98)
     eps: float = 1e-9
     weight_decay: float = 0.
@@ -83,8 +83,11 @@ class HyperParameters:
     log_offset: float = 1.
 
     # Save, log and synthesis
-    checkpoint: int = 10000
-    synth_step: int = 500
-    eval_step: int = 500
+    #save_step = 10000
+    checkpoint: int = 1000
+    synth_step: int = 1000
+    eval_step: int = 1000
     # eval_size: int = 256
-    log_step: int = 100
+    log_step: int = 1000
+    #clear_Time = 20
+

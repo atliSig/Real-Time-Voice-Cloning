@@ -2,9 +2,11 @@
 #SBATCH -N 1	  # nodes requested
 #SBATCH -n 1	  # tasks requested
 #SBATCH --partition=Teach-Standard
-#SBATCH --gres=gpu:1
+##SBATCH --time=0-08:00:00
+#SBATCH --gres=gpu:2
+#SBATCH --mail-type=END,FAIL
 #SBATCH --mem=12000  # memory in Mb
-#SBATCH --time=0-08:00:00
+
 
 export CUDA_HOME=/opt/cuda-9.0.176.1/
 
@@ -37,10 +39,16 @@ export DATA_DIR=${TMP}/data/
 mkdir -p ${DATA_DIR}/models/
 export MODEL_DIR=${DATA_DIR}/models/
 
+mkdir -p /home/${STUDENT_ID}/models/
+export MODEL_HOME_DIR=/home/${STUDENT_ID}/models/
 
 # Comet
 
+# mkdir -p /home/${STUDENT_ID}/models/
+# export MODEL_DIR=/home/${STUDENT_ID}/models/
+
 export USE_COMET=1
+export COMET_API_KEY=ZVxnfYIYLUY5bQHYtnfZOnHjE
 
 # Download Data Set
 
@@ -57,4 +65,14 @@ rsync -a /home/s1841215/Real-Time-Voice-Cloning/fastspeech2/data/LJSpeech-1.1 /d
 
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd /home/s1841215/Real-Time-Voice-Cloning/fastspeech2
-python train.py --experiment-name 'train_test_exp'
+python train.py --experiment-name 'train_test_exp3'
+
+# mkdir -p /home/${STUDENT_ID}/models/
+# rsync -a /disk/scratch/s1841215/data/models /home/${STUDENT_ID}/models/
+
+# upload most recent model
+# exit
+# cd /home/${STUDENT_ID}/models/
+# source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
+# fn=$(ls -t | head -n1)
+# comet upload "$fn"
