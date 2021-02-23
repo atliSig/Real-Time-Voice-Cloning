@@ -1,6 +1,6 @@
 import os
-from data import ljspeech, blizzard2013
-import hparams as hp
+from fastspeech2.data import ljspeech, blizzard2013
+from fastspeech2.hparams import HyperParameters as hp
 
 
 def write_metadata(train, val, out_dir):

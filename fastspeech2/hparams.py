@@ -9,7 +9,7 @@ class HyperParameters:
     # Dataset
     num_workers: int = 4
     dataset: str = "VCTK"
-    data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'LJSpeech-1.1')
+    data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'VCTK')
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/fastspeech2")
     # Text
     text_cleaners: List = field(default_factory=lambda: ['english_cleaners'])
