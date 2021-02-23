@@ -1,13 +1,8 @@
-from hparams import HyperParameters as hp
-import text
-import os
-from scipy.io import wavfile
+from fastspeech2.hparams import HyperParameters as hp
 from matplotlib import pyplot as plt
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import matplotlib
 import matplotlib
 matplotlib.use("Agg")
 

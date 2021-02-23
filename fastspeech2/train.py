@@ -10,17 +10,16 @@ import os
 import time
 from pathlib import Path
 
-from voice_cloning.encoder.model import SpeakerEncoder
 from voice_cloning.encoder.inference import load_model as load_speaker_encoder
 
-from fastspeech2 import FastSpeech2
-from loss import FastSpeech2Loss
-from dataset import Dataset
-from optimizer import ScheduledOptim
-from evaluate import evaluate
-from hparams import HyperParameters as hp
-import utils
-from audio import tools as audiotools
+from fastspeech2.model import FastSpeech2
+from fastspeech2.loss import FastSpeech2Loss
+from fastspeech2.dataset import Dataset
+from fastspeech2.optimizer import ScheduledOptim
+from fastspeech2.evaluate import evaluate
+from fastspeech2.hparams import HyperParameters as hp
+import fastspeech2.utils as utils
+from fastspeech2.audio import tools as audiotools
 
 
 def main(args):
@@ -32,11 +31,14 @@ def main(args):
     # Get dataset
     dataset = Dataset("train.txt")
     loader = DataLoader(dataset, batch_size=hp.batch_size**2, shuffle=True,
-                        collate_fn=dataset.collate_fn, drop_last=True, num_workers=0)
+                        collate_fn=dataset.collate_fn, drop_last=True, num_workers=hp.num_workers)
 
-    speaker_encoder = load_speaker_encoder(Path(hp.speaker_encoder_path), device).to(device)
-    for param in speaker_encoder.parameters():
-        param.requires_grad = False
+    speaker_encoder = None
+    if hp.speaker_encoder_path != "":
+        speaker_encoder = load_speaker_encoder(Path(hp.speaker_encoder_path), device).to(device)
+        if not hp.train_speaker_encoder:
+            for param in speaker_encoder.parameters():
+                param.requires_grad = False
 
     # Define model
     model = nn.DataParallel(FastSpeech2(speaker_encoder)).to(device)
@@ -91,8 +93,6 @@ def main(args):
     start_time = time.perf_counter()
     # Training
     first_mel_train_loss, first_postnet_train_loss, first_d_train_loss, first_f_train_loss, first_e_train_loss = \
-        None, None, None, None, None
-    first_mel_valid_loss, first_postnet_valid_loss, first_d_valid_loss, first_f_valid_loss, first_e_valid_loss = \
         None, None, None, None, None
     
     for epoch in range(hp.epochs):
@@ -166,8 +166,8 @@ def main(args):
                     now = time.perf_counter()
 
                     print("\nEpoch [{}/{}], Step [{}/{}]:".format(epoch+1, hp.epochs, current_step, total_step))
-                    print("Total Loss: {:.4f}, Mel Loss: {:.4f}, Mel PostNet Loss: {:.4f}, Duration Loss: {:.4f}, "
-                           "F0 Loss: {:.4f}, Energy Loss: {:.4f};".format(mel_l+mel_postnet_l+d_l+f_l+e_l, mel_l,
+                    print("Total Loss: {:.4f}, Mel Loss: {:.5f}, Mel PostNet Loss: {:.5f}, Duration Loss: {:.5f}, "
+                           "F0 Loss: {:.5f}, Energy Loss: {:.5f};".format(mel_l+mel_postnet_l+d_l+f_l+e_l, mel_l,
                                                                           mel_postnet_l, d_l, f_l, e_l))
                     print("Time Used: {:.3f}s".format(now - start_time))
                     start_time = now

@@ -5,9 +5,9 @@ import numpy as np
 import math
 import os
 
-from hparams import HyperParameters as hparams
-from utils import pad_1D, pad_2D, process_meta
-from text import text_to_sequence
+from fastspeech2.hparams import HyperParameters as hparams
+from fastspeech2.utils import pad_1D, pad_2D, process_meta
+from fastspeech2.text import text_to_sequence
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -92,11 +92,9 @@ class Dataset(Dataset):
         cut_list = list()
         for i in range(real_batchsize):
             if self.sort:
-                cut_list.append(
-                    index_arr[i*real_batchsize:(i+1)*real_batchsize])
+                cut_list.append(index_arr[i*real_batchsize:(i+1)*real_batchsize])
             else:
-                cut_list.append(
-                    np.arange(i*real_batchsize, (i+1)*real_batchsize))
+                cut_list.append(np.arange(i*real_batchsize, (i+1)*real_batchsize))
 
         output = list()
         for i in range(real_batchsize):

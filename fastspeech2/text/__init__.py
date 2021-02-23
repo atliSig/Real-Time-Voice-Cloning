@@ -1,7 +1,7 @@
 """ from https://github.com/keithito/tacotron """
 import re
-from text import cleaners
-from text.symbols import symbols
+from fastspeech2.text import cleaners
+from fastspeech2.text.symbols import symbols
 
 
 # Mappings from symbol to numeric ID and vice versa:
@@ -34,8 +34,7 @@ def text_to_sequence(text, cleaner_names):
         if not m:
             sequence += _symbols_to_sequence(_clean_text(text, cleaner_names))
             break
-        sequence += _symbols_to_sequence(
-            _clean_text(m.group(1), cleaner_names))
+        sequence += _symbols_to_sequence(_clean_text(m.group(1), cleaner_names))
         sequence += _arpabet_to_sequence(m.group(2))
         text = m.group(3)
 

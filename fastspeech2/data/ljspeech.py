@@ -4,10 +4,10 @@ import tgt
 from scipy.io.wavfile import read
 import pyworld as pw
 import torch
-import audio as Audio
-from utils import get_alignment
-from text import _clean_text
-import hparams as hp
+import fastspeech2.audio as Audio
+from fastspeech2.utils import get_alignment
+from fastspeech2.text import _clean_text
+from fastspeech2.hparams import HyperParameters as hp
 
 
 def prepare_align(in_dir):
