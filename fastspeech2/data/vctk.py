@@ -3,10 +3,11 @@ import os
 import tgt
 import pyworld as pw
 import torch
+from torchaudio.transforms import Resample
+from scipy.io.wavfile import read
 import fastspeech2.audio as Audio
 from fastspeech2.utils import get_alignment
 from fastspeech2.text import _clean_text
-import librosa
 from fastspeech2.hparams import HyperParameters as hp
 
 ### spk table ###
@@ -106,7 +107,11 @@ def process_utterance(in_dir, out_dir, spker, basename):
         return None
 
     # Read and trim wav files
-    wav, _ = librosa.load(wav_path, sr=hp.sampling_rate)
+    sr, wav = read(wav_path)
+    wav = torch.FloatTensor(wav.astype(np.float32))
+    if sr != hp.sampling_rate:
+        wav = Resample(orig_freq=sr, new_freq=hp.sampling_rate)(wav)
+
     wav = wav[int(hp.sampling_rate*start):int(hp.sampling_rate*end)].astype(np.float32)
     
     # Compute fundamental frequency

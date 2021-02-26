@@ -203,9 +203,8 @@ def main(args):
                         f0_output = f0_output[0, :length].detach().cpu().numpy()
                         energy_output = energy_output[0, :length].detach().cpu().numpy()
 
-                        utils.plot_data(
-                            [(mel_postnet.numpy(), f0_output, energy_output), (mel_target.numpy(), f0, energy)],
-                            comet_experiment, ['Synthetized Spectrogram', 'Ground-Truth Spectrogram'])
+                        utils.plot_data([(mel_postnet.numpy(), f0_output, energy_output), (mel_target.numpy(), f0, energy)],
+                            comet_experiment, ['Synthesized Spectrogram', 'Ground-Truth Spectrogram'])
 
                 if current_step % hp.eval_step == 0:
                     model.eval()

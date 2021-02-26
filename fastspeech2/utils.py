@@ -128,11 +128,13 @@ def get_waveglow():
 
 def waveglow_infer(mel, waveglow):
     with torch.no_grad():
-        wav = waveglow.infer(mel, sigma=1.0) * hp.max_wav_value
-        wav = wav.squeeze().cpu().numpy()
-    wav = wav.astype('int16')
+        try:
+            wav = waveglow.infer(mel, sigma=1.0) * hp.max_wav_value
+            wav = wav.squeeze().cpu().numpy().astype('int16')
+        except:
+            print("Error in waveglow inference")
+            wav = np.zeros((1, 1))
     return wav
-    # wavfile.write(path, hp.sampling_rate, wav)
 
 
 def melgan_infer(mel, melgan):
@@ -140,7 +142,6 @@ def melgan_infer(mel, melgan):
         wav = melgan.inference(mel).cpu().numpy()
     wav = wav.astype('int16')
     return wav
-    # wavfile.write(path, hp.sampling_rate, wav)
 
 
 def get_melgan():

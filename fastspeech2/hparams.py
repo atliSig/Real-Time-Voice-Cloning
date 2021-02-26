@@ -7,7 +7,7 @@ from typing import List, Tuple
 class HyperParameters:
     experiment_name = "experiment_name"
     # Dataset
-    num_workers: int = 4
+    num_workers: int = 2
     dataset: str = "VCTK"
     data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'VCTK')
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/fastspeech2")
@@ -15,7 +15,7 @@ class HyperParameters:
     # Text
     text_cleaners: List = field(default_factory=lambda: ['english_cleaners'])
 
-    ### LJSpeech ###
+    ### LJSpeech/VCTK ###
     sampling_rate: int = 22050
     filter_length: int = 1024
     hop_length: int = 256
@@ -59,7 +59,7 @@ class HyperParameters:
     ### VCTK ###
     f0_min: float = 71.0
     f0_max: float = 797.9
-    energy_min: float = 3.26e-6
+    energy_min: float = 0.0
     energy_max: float = 0.016
     n_bins: int = 256
 
@@ -70,15 +70,11 @@ class HyperParameters:
     eval_path: str = os.path.join(models_path, "eval")
     log_path: str = os.path.join(models_path, "log")
     test_path: str = os.path.join(models_path, "results")
-    # synth_path: str = os.path.join("./synth/", dataset)
-    # eval_path: str = os.path.join("./eval/", dataset)
-    # log_path: str = os.path.join("./log/", dataset)
-    # test_path: str = "./results"
 
     # Optimizer
-    lr: float = 1e-3
-    batch_size: int = 32
-    epochs: int = 1000
+    lr: float = 1e-4
+    batch_size: int = 4
+    epochs: int = 1
     n_warm_up_step: int = 4000
     grad_clip_thresh: float = 1.0
     acc_steps: int = 1
@@ -87,17 +83,14 @@ class HyperParameters:
     weight_decay: float = 0.
 
     # Vocoder
-    vocoder: str = 'waveglow'  # 'waveglow' or 'melgan'
+    vocoder: str = 'waveglow' #'waveglow' or 'melgan'
 
     # Log-scaled duration
     log_offset: float = 1.
 
     # Save, log and synthesis
-    #save_step = 10000
     checkpoint: int = 1000
     synth_step: int = 1000
     eval_step: int = 1000
-    # eval_size: int = 256
     log_step: int = 1000
-    #clear_Time = 20
 
