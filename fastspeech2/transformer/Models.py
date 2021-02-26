@@ -93,8 +93,8 @@ class Decoder(nn.Module):
         d_model = (hp.decoder_hidden + speaker_encoder_dim)
 
         n_position = hp.max_seq_len + 1
-        self.position_enc = nn.Parameter(
-            get_sinusoid_encoding_table(n_position, d_word_vec).unsqueeze(0), requires_grad=False)
+        self.position_enc = nn.Parameter(get_sinusoid_encoding_table(n_position, d_word_vec).unsqueeze(0),
+                                         requires_grad=False)
 
         self.layer_stack = nn.ModuleList([FFTBlock(d_model, hp.fft_conv1d_filter_size, hp.decoder_head, d_k, d_v,
                                                    dropout=hp.decoder_dropout)

@@ -1,4 +1,4 @@
-from comet_ml import OfflineExperiment
+from comet_ml import OfflineExperiment, Experiment
 
 import torch
 import torch.nn as nn
@@ -76,27 +76,32 @@ def main(args):
         raise ValueError("Vocoder '%s' is not supported", hp.vocoder)
 
     comet_experiment = None
-    if int(os.getenv("USE_COMET", default=0)) == 1:
-        offline_dir = os.path.join(hp.models_path, "comet")
-        os.makedirs(offline_dir, exist_ok=True)
+    use_comet = int(os.getenv("USE_COMET", default=0))
+    if use_comet != 0:
+        if use_comet == 1:
+            offline_dir = os.path.join(hp.models_path, "comet")
+            os.makedirs(offline_dir, exist_ok=True)
+            comet_experiment = OfflineExperiment(
+                project_name="mlp-project",
+                workspace="ino-voice",
+                offline_directory=offline_dir,
+            )
+        elif use_comet == 2:
+            comet_experiment = Experiment(
+                api_key="BtyTwUoagGMh3uN4VZt6gMOn8",
+                project_name="mlp-project",
+                workspace="ino-voice",
+            )
 
-        comet_experiment = OfflineExperiment(
-            # api_key="BtyTwUoagGMh3uN4VZt6gMOn8",
-            project_name="mlp-project",
-            workspace="ino-voice",
-            offline_directory=offline_dir,
-        )
         comet_experiment.set_name(args.experiment_name)
         comet_experiment.log_parameters(hp)
         comet_experiment.log_html(args.m)
 
     start_time = time.perf_counter()
-    # Training
     first_mel_train_loss, first_postnet_train_loss, first_d_train_loss, first_f_train_loss, first_e_train_loss = \
         None, None, None, None, None
     
     for epoch in range(hp.epochs):
-        # Get Training Loader
         total_step = hp.epochs * len(loader) * hp.batch_size
         for i, batchs in enumerate(loader):
             for j, data_of_batch in enumerate(batchs):

@@ -27,7 +27,7 @@ class FastSpeech2(nn.Module):
             speaker_encoder_dim = 0
 
         self.variance_adaptor = VarianceAdaptor(speaker_encoder_dim)
-        self.decoder = Decoder()
+        self.decoder = Decoder(speaker_encoder_dim)
         self.mel_linear = nn.Linear(hp.decoder_hidden + speaker_encoder_dim, hp.n_mel_channels)
 
         self.use_postnet = use_postnet
