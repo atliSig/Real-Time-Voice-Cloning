@@ -23,4 +23,5 @@ fastspeech2/preprocessed
 fastspeech2/datasets/*
 fastspeech2/montreal-forced-aligner/*
 
+*.swp
 .vscode
