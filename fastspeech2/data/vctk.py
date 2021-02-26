@@ -65,11 +65,11 @@ def build_from_path(in_dir, out_dir):
                     val.append(info)
                 else:
                     train.append(info)
-                
+
                 if index % 100 == 0:
                     print("Done %d" % index)
                 index = index + 1
-                
+
                 f0_max = max(f0_max, f_max)
                 f0_min = min(f0_min, f_min)
                 energy_max = max(energy_max, e_max)
@@ -108,20 +108,20 @@ def process_utterance(in_dir, out_dir, spker, basename):
 
     # Read and trim wav files
     sr, wav = read(wav_path)
-    wav = torch.FloatTensor(wav.astype(np.float32))
+    wav = torch.tensor(wav.astype(np.float32))
     if sr != hp.sampling_rate:
         wav = Resample(orig_freq=sr, new_freq=hp.sampling_rate)(wav)
-
-    wav = wav[int(hp.sampling_rate*start):int(hp.sampling_rate*end)].astype(np.float32)
+    wav = wav[int(hp.sampling_rate*start):int(hp.sampling_rate*end)]
     
     # Compute fundamental frequency
-    f0, _ = pw.dio(wav.astype(np.float64), hp.sampling_rate, frame_period=hp.hop_length/hp.sampling_rate*1000)
+    f0, _ = pw.dio(wav.numpy().astype(np.float64), hp.sampling_rate,
+                   frame_period=hp.hop_length/hp.sampling_rate*1000)
     f0 = f0[:sum(duration)]
 
     # Compute mel-scale spectrogram and energy
-    mel_spectrogram, energy = Audio.tools.get_mel_from_wav(torch.FloatTensor(wav))
+    mel_spectrogram, energy = Audio.tools.get_mel_from_wav(wav)
     mel_spectrogram = mel_spectrogram.cpu().numpy().astype(np.float32)[:, :sum(duration)]
-    energy = energy.cpu().numpy().astype(np.float32)[:sum(duration)]
+    energy = energy.numpy().astype(np.float32)[:sum(duration)]
     if mel_spectrogram.shape[1] >= hp.max_seq_len:
         return None
     

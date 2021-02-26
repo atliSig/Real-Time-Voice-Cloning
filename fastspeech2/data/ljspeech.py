@@ -96,10 +96,8 @@ def process_utterance(in_dir, out_dir, basename):
     f0 = f0[:sum(duration)]
 
     # Compute mel-scale spectrogram and energy
-    mel_spectrogram, energy = Audio.tools.get_mel_from_wav(
-        torch.FloatTensor(wav))
-    mel_spectrogram = mel_spectrogram.numpy().astype(np.float32)[
-        :, :sum(duration)]
+    mel_spectrogram, energy = Audio.tools.get_mel_from_wav(torch.FloatTensor(wav))
+    mel_spectrogram = mel_spectrogram.numpy().astype(np.float32)[:, :sum(duration)]
     energy = energy.numpy().astype(np.float32)[:sum(duration)]
     if mel_spectrogram.shape[1] >= hp.max_seq_len:
         return None
