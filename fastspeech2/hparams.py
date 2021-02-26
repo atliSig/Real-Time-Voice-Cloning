@@ -7,20 +7,18 @@ from typing import List, Tuple
 class HyperParameters:
     experiment_name = "experiment_name"
     # Dataset
-    num_workers: int = 2
+    num_workers: int = 4
     dataset: str = "VCTK"
-    data_path: str = os.path.join(os.environ.get('DATASET_DIR',"/home/rokas/year4/mlp/cw3/data/datasets/"), 'VCTK')
+    data_path: str = os.path.join(os.environ.get('DATASET_DIR', "/home/rokas/year4/mlp/cw3/data/datasets/"), 'VCTK')
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/fastspeech2")
 
     # Text
     text_cleaners: List = field(default_factory=lambda: ['english_cleaners'])
 
-    ### LJSpeech/VCTK ###
     sampling_rate: int = 22050
     filter_length: int = 1024
     hop_length: int = 256
     win_length: int = 1024
-    max_wav_value: float = 32768.0
     n_mel_channels: int = 80
     mel_fmin: float = 0.0
     mel_fmax: float = 8000.0
@@ -45,8 +43,8 @@ class HyperParameters:
 
     # Speaker Encoder
     speaker_encoder_dim: int = 256
-    # speaker_encoder_path: str = "/home/rokas/year4/mlp/cw3/data/models/speaker_encoder/pretrained.pt"
-    speaker_encoder_path: str = ""
+    speaker_encoder_path: str = "/home/rokas/year4/mlp/cw3/data/models/speaker_encoder/pretrained.pt"
+    #speaker_encoder_path: str = ""
     train_speaker_encoder: bool = False
 
     ### LJSpeech ###
@@ -55,13 +53,15 @@ class HyperParameters:
     # energy_min: float = 0.0
     # energy_max: float = 315.0
     # n_bins: int = 256
+    # max_wav_value: float = 32768.0
 
     ### VCTK ###
     f0_min: float = 71.0
     f0_max: float = 797.9
     energy_min: float = 0.0
-    energy_max: float = 0.016
+    energy_max: float = 447.0
     n_bins: int = 256
+    max_wav_value: float = 38210.0
 
     # Checkpoints and synthesis path
     preprocessed_path: str = os.path.join(data_path, "preprocessed")
