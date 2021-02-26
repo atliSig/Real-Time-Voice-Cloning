@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-import transformer.Constants as Constants
-from transformer.Layers import FFTBlock
-from text.symbols import symbols
-from hparams import HyperParameters as hp
+import fastspeech2.transformer.Constants as Constants
+from fastspeech2.transformer.Layers import FFTBlock
+from fastspeech2.text.symbols import symbols
+from fastspeech2.hparams import HyperParameters as hp
 
 
 def get_sinusoid_encoding_table(n_position, d_hid, padding_idx=None):
@@ -17,8 +17,7 @@ def get_sinusoid_encoding_table(n_position, d_hid, padding_idx=None):
     def get_posi_angle_vec(position):
         return [cal_angle(position, hid_j) for hid_j in range(d_hid)]
 
-    sinusoid_table = np.array([get_posi_angle_vec(pos_i)
-                               for pos_i in range(n_position)])
+    sinusoid_table = np.array([get_posi_angle_vec(pos_i) for pos_i in range(n_position)])
 
     sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
     sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
@@ -86,26 +85,20 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     """ Decoder """
 
-    def __init__(self,
-                 len_max_seq=hp.max_seq_len,
-                 d_word_vec=hp.encoder_hidden+hp.speaker_encoder_dim,
-                 n_layers=hp.decoder_layer,
-                 n_head=hp.decoder_head,
-                 d_k=(hp.decoder_hidden + hp.speaker_encoder_dim) // hp.decoder_head,
-                 d_v=(hp.decoder_hidden + hp.speaker_encoder_dim) // hp.decoder_head,
-                 d_model=(hp.decoder_hidden + hp.speaker_encoder_dim),
-                 d_inner=hp.fft_conv1d_filter_size,
-                 dropout=hp.decoder_dropout):
-
+    def __init__(self, speaker_encoder_dim: int = 0):
         super(Decoder, self).__init__()
+        d_word_vec = hp.encoder_hidden + speaker_encoder_dim
+        d_k = (hp.decoder_hidden + speaker_encoder_dim) // hp.decoder_head
+        d_v = (hp.decoder_hidden + speaker_encoder_dim) // hp.decoder_head
+        d_model = (hp.decoder_hidden + speaker_encoder_dim)
 
-        n_position = len_max_seq + 1
+        n_position = hp.max_seq_len + 1
+        self.position_enc = nn.Parameter(get_sinusoid_encoding_table(n_position, d_word_vec).unsqueeze(0),
+                                         requires_grad=False)
 
-        self.position_enc = nn.Parameter(
-            get_sinusoid_encoding_table(n_position, d_word_vec).unsqueeze(0), requires_grad=False)
-
-        self.layer_stack = nn.ModuleList([FFTBlock(
-            d_model, d_inner, n_head, d_k, d_v, dropout=dropout) for _ in range(n_layers)])
+        self.layer_stack = nn.ModuleList([FFTBlock(d_model, hp.fft_conv1d_filter_size, hp.decoder_head, d_k, d_v,
+                                                   dropout=hp.decoder_dropout)
+            for _ in range(hp.decoder_layer)])
 
     def forward(self, enc_seq, mask, return_attns=False):
 

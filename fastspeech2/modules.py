@@ -18,19 +18,19 @@ def clones(module, N):
 class VarianceAdaptor(nn.Module):
     """ Variance Adaptor """
 
-    def __init__(self):
+    def __init__(self, speaker_encoder_dim=0):
         super(VarianceAdaptor, self).__init__()
-        self.duration_predictor = VariancePredictor()
+        self.duration_predictor = VariancePredictor(speaker_encoder_dim)
         self.length_regulator = LengthRegulator()
-        self.pitch_predictor = VariancePredictor()
-        self.energy_predictor = VariancePredictor()
+        self.pitch_predictor = VariancePredictor(speaker_encoder_dim)
+        self.energy_predictor = VariancePredictor(speaker_encoder_dim)
 
         self.pitch_bins = nn.Parameter(torch.exp(torch.linspace(
             np.log(hp.f0_min), np.log(hp.f0_max), hp.n_bins-1)), requires_grad=False)
         self.energy_bins = nn.Parameter(torch.linspace(
             hp.energy_min, hp.energy_max, hp.n_bins-1), requires_grad=False)
-        self.pitch_embedding = nn.Embedding(hp.n_bins, hp.encoder_hidden + hp.speaker_encoder_dim)
-        self.energy_embedding = nn.Embedding(hp.n_bins, hp.encoder_hidden + hp.speaker_encoder_dim)
+        self.pitch_embedding = nn.Embedding(hp.n_bins, hp.encoder_hidden + speaker_encoder_dim)
+        self.energy_embedding = nn.Embedding(hp.n_bins, hp.encoder_hidden + speaker_encoder_dim)
 
     def forward(self, x, src_mask, mel_mask=None, duration_target=None, pitch_target=None, energy_target=None, max_len=None, d_control=1.0, p_control=1.0, e_control=1.0):
 
@@ -105,13 +105,13 @@ class LengthRegulator(nn.Module):
 class VariancePredictor(nn.Module):
     """ Duration, Pitch and Energy Predictor """
 
-    def __init__(self):
+    def __init__(self, speaker_encoder_dim=0):
         super(VariancePredictor, self).__init__()
 
-        self.input_size = hp.encoder_hidden + hp.speaker_encoder_dim
-        self.filter_size = hp.variance_predictor_filter_size + hp.speaker_encoder_dim
+        self.input_size = hp.encoder_hidden + speaker_encoder_dim
+        self.filter_size = hp.variance_predictor_filter_size + speaker_encoder_dim
         self.kernel = hp.variance_predictor_kernel_size
-        self.conv_output_size = hp.variance_predictor_filter_size + + hp.speaker_encoder_dim
+        self.conv_output_size = hp.variance_predictor_filter_size + + speaker_encoder_dim
         self.dropout = hp.variance_predictor_dropout
 
         self.conv_layer = nn.Sequential(OrderedDict([

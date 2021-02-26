@@ -21,13 +21,14 @@ class FastSpeech2(nn.Module):
         self.encoder = Encoder()
         if speaker_encoder:
             self.speaker_encoder = lambda x: speaker_encoder(x[:, :, :params_data.mel_n_channels])
+            speaker_encoder_dim = hp.speaker_encoder_dim
         else:
             self.speaker_encoder = None
-            hp.speaker_encoder_dim = 0
+            speaker_encoder_dim = 0
 
-        self.variance_adaptor = VarianceAdaptor()
-        self.decoder = Decoder()
-        self.mel_linear = nn.Linear(hp.decoder_hidden + hp.speaker_encoder_dim, hp.n_mel_channels)
+        self.variance_adaptor = VarianceAdaptor(speaker_encoder_dim)
+        self.decoder = Decoder(speaker_encoder_dim)
+        self.mel_linear = nn.Linear(hp.decoder_hidden + speaker_encoder_dim, hp.n_mel_channels)
 
         self.use_postnet = use_postnet
         if self.use_postnet:
