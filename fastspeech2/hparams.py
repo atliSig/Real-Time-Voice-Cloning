@@ -9,7 +9,7 @@ class HyperParameters:
     # Dataset
     num_workers: int = 4
     dataset: str = "VCTK"
-    data_path: str = os.path.join(os.environ.get('DATASET_DIR', "/home/rokas/year4/mlp/cw3/data/datasets/"), 'VCTK')
+    data_path: str = os.environ.get('DATASET_DIR', "/home/rokas/year4/mlp/cw3/data/datasets/")
     models_path: str = os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/fastspeech2")
 
     # Text
@@ -43,7 +43,7 @@ class HyperParameters:
 
     # Speaker Encoder
     speaker_encoder_dim: int = 256
-    speaker_encoder_path: str = "/home/rokas/year4/mlp/cw3/data/models/speaker_encoder/pretrained.pt"
+    speaker_encoder_path: str = os.path.join(os.environ.get('MODEL_DIR', "/home/rokas/year4/mlp/cw3/data/models/"), "speaker_encoder/pretrained.pt")
     #speaker_encoder_path: str = ""
     train_speaker_encoder: bool = False
 
@@ -73,8 +73,8 @@ class HyperParameters:
 
     # Optimizer
     lr: float = 1e-4
-    batch_size: int = 4
-    epochs: int = 1
+    batch_size: int = 8
+    epochs: int = 10
     n_warm_up_step: int = 4000
     grad_clip_thresh: float = 1.0
     acc_steps: int = 1
@@ -83,7 +83,8 @@ class HyperParameters:
     weight_decay: float = 0.
 
     # Vocoder
-    vocoder: str = 'waveglow' #'waveglow' or 'melgan'
+    vocoder: str = 'waveglow'
+    #vocoder = 'melgan'
 
     # Log-scaled duration
     log_offset: float = 1.
