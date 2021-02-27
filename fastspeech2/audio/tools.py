@@ -2,8 +2,8 @@ import torch
 import numpy as np
 from scipy.io.wavfile import read
 
-import fastspeech2.audio.stft as stft
-from fastspeech2.audio.audio_processing import griffin_lim
+import audio.stft as stft
+from audio.audio_processing import griffin_lim
 from fastspeech2.hparams import HyperParameters as hparams
 
 _stft = stft.TacotronSTFT(

@@ -7,6 +7,7 @@
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mem=12000  # memory in Mb
 
+export DATASET=$1
 
 export CUDA_HOME=/opt/cuda-9.0.176.1/
 
@@ -25,21 +26,7 @@ export PATH=${CUDA_HOME}/bin:${PATH}
 export PYTHON_PATH=$PATH
 
 mkdir -p /disk/scratch/${STUDENT_ID}
-
-export TMPDIR=/disk/scratch/${STUDENT_ID}/
-export TMP=/disk/scratch/${STUDENT_ID}
-
-mkdir -p ${TMP}/datasets/
-export DATASET_DIR=${TMP}/datasets/
-
-mkdir -p ${TMP}/data/
-export DATA_DIR=${TMP}/data/
-
-mkdir -p ${DATA_DIR}/models/
-export MODEL_DIR=${DATA_DIR}/models/
-
-mkdir -p /home/${STUDENT_ID}/models/
-export MODEL_HOME_DIR=/home/${STUDENT_ID}/models/
+export TMP_DIR=/disk/scratch/${STUDENT_ID}
 
 # Comet
 
@@ -48,11 +35,16 @@ export COMET_API_KEY=ZVxnfYIYLUY5bQHYtnfZOnHjE
 
 # rsync dataset
 
-rsync -a /home/${STUDENT_ID}/Real-Time-Voice-Cloning/fastspeech2/data/VCTK-Corpus /disk/scratch/${STUDENT_ID}/datasets
+mkdir -p ${TMP_DIR}/dataset/
+rsync -ua /home/${STUDENT_ID}/data/datasets/${DATASET} ${TMP_DIR}/datasets/
+
+export DATASET_DIR=${TMP_DIR}/datasets/${DATASET}
+export MODEL_DIR=/home/${STUDENT_ID}/data/models
 
 # Activate the relevant virtual environment:
 
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
-cd /home/${STUDENT_ID}/Real-Time-Voice-Cloning/fastspeech2
-python train.py --experiment-name 'vctk_no_encoder'
+cd /home/${STUDENT_ID}/Real-Time-Voice-Cloning/
+export PYTHONPATH=.
+python -W ignore fastspeech2/train.py --experiment-name $2
 

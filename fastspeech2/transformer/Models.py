@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-import fastspeech2.transformer.Constants as Constants
-from fastspeech2.transformer.Layers import FFTBlock
+import transformer.Constants as Constants
+from transformer.Layers import FFTBlock
 from fastspeech2.text.symbols import symbols
 from fastspeech2.hparams import HyperParameters as hp
 
