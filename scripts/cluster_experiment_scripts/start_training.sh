@@ -1,10 +1,9 @@
 #!/bin/sh
 #SBATCH -N 1	  # nodes requested
 #SBATCH -n 1	  # tasks requested
-#SBATCH --partition=Teach-Standard
+#SBATCH --partition=Teach-LongJobs
 ##SBATCH --time=0-08:00:00
-#SBATCH --gres=gpu:2
-#SBATCH --mail-type=END,FAIL
+#SBATCH --gres=gpu:1
 #SBATCH --mem=12000  # memory in Mb
 
 export DATASET=$1
@@ -31,7 +30,7 @@ export TMP_DIR=/disk/scratch/${STUDENT_ID}
 # Comet
 
 export USE_COMET=1
-export COMET_API_KEY=ZVxnfYIYLUY5bQHYtnfZOnHjE
+#export COMET_API_KEY=ZVxnfYIYLUY5bQHYtnfZOnHjE
 
 # rsync dataset
 
@@ -46,5 +45,5 @@ export MODEL_DIR=/home/${STUDENT_ID}/data/models
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd /home/${STUDENT_ID}/Real-Time-Voice-Cloning/
 export PYTHONPATH=.
-python -W ignore fastspeech2/train.py --experiment-name $2
+python -W ignore fastspeech2/train.py --experiment-name $2 --restore_step 49000
 

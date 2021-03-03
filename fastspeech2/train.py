@@ -26,7 +26,7 @@ def main(args):
     torch.manual_seed(0)
 
     # Get device
-    device = torch.device('cuda'if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # Get dataset
     dataset = Dataset("train.txt")
@@ -36,12 +36,14 @@ def main(args):
     speaker_encoder = None
     if hp.speaker_encoder_path != "":
         speaker_encoder = load_speaker_encoder(Path(hp.speaker_encoder_path), device).to(device)
-        if not hp.train_speaker_encoder:
-            for param in speaker_encoder.parameters():
+        for param in speaker_encoder.parameters():
                 param.requires_grad = False
+        else:
+            speaker_encoder.train()
 
     # Define model
-    model = nn.DataParallel(FastSpeech2(speaker_encoder)).to(device)
+    fastspeech_model = FastSpeech2(speaker_encoder).to(device)
+    model = nn.DataParallel(fastspeech_model).to(device)
     print("Model Has Been Defined")
     num_param = utils.get_param_num(model)
     print('Number of FastSpeech2 Parameters:', num_param)
@@ -120,6 +122,17 @@ def main(args):
                 mel_len = torch.from_numpy(data_of_batch["mel_len"]).long().to(device)
                 max_src_len = np.max(data_of_batch["src_len"]).astype(np.int32)
                 max_mel_len = np.max(data_of_batch["mel_len"]).astype(np.int32)
+
+                # text = torch.from_numpy(data_of_batch["text"]).long()
+                # mel_target = torch.from_numpy(data_of_batch["mel_target"]).float()
+                # D = torch.from_numpy(data_of_batch["D"]).long()
+                # log_D = torch.from_numpy(data_of_batch["log_D"]).float()
+                # f0 = torch.from_numpy(data_of_batch["f0"]).float()
+                # energy = torch.from_numpy(data_of_batch["energy"]).float()
+                # src_len = torch.from_numpy(data_of_batch["src_len"]).long()
+                # mel_len = torch.from_numpy(data_of_batch["mel_len"]).long()
+                # max_src_len = np.max(data_of_batch["src_len"]).astype(np.int32)
+                # max_mel_len = np.max(data_of_batch["mel_len"]).astype(np.int32)
 
                 # Forward
                 mel_output, mel_postnet_output, log_duration_output, f0_output, energy_output, src_mask, mel_mask, _ = \

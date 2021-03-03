@@ -114,8 +114,7 @@ def get_mask_from_lengths(lengths, max_len=None):
 
 
 def get_waveglow():
-    waveglow = torch.hub.load(
-        'nvidia/DeepLearningExamples:torchhub', 'nvidia_waveglow')
+    waveglow = torch.hub.load('nvidia/DeepLearningExamples:torchhub', 'nvidia_waveglow')
     waveglow = waveglow.remove_weightnorm(waveglow)
     waveglow.eval()
     for m in waveglow.modules():
